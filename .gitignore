@@ -1,0 +1,8 @@
+build/
+.DS_Store
+*.o
+*.out
+compile_commands.json
+__pycache__/
+*.pyc
+.idea/
