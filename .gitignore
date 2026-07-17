@@ -6,3 +6,14 @@ compile_commands.json
 __pycache__/
 *.pyc
 .idea/
+out/
+
+# LaTeX build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/*.pdf
