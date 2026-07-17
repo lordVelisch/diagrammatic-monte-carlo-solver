@@ -12,5 +12,6 @@ endif()
 add_compile_options(-Wall -Wextra)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+add_compile_definitions(PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
 
 add_subdirectory(src)
