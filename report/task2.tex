@@ -70,7 +70,7 @@
         \label{fig:task2-convergence}
     \end{figure}
 
-    \begin{figure}
+    \begin{figure}[h]
         \centering
         \includegraphics[width=0.8\textwidth]{task2/pi_distribution}
         \caption{Distribution of the area and integration methods to $\pi$.}
@@ -83,6 +83,67 @@
     Mean value is pi if N goes to infinity -> unbiased.
 
     Could do some importance sampling but no huge gains expected from that
+
+    \section{Task 3}\label{sec:task-3}
+
+    The goal of this exercise is to approximate following integrals using MC intergration:
+
+    In Monte Carlo integration we approximate the integral of a function as the expectation value over a certain interval. For the interval [0,1]:
+
+    \begin{equation}
+        \label{eq:int}
+        Q_n(f) = <f>_n = \frac{1}{n}*\sum_{j=1}^{n} f(x_j) \approx \int_{0}^{1} f(x)= I_d(f)
+    \end{equation}
+
+    with
+
+    \begin{equation*}
+        \lim_{n->\infty} Q_n = I_d
+    \end{equation*}
+
+    There are multiple ways to calculate the error of the approximation that will be discussed in more detail later. For now we will look at the simplest way. As each random draw $x_k$ is random they are uncorrelated and we can write use the variance of the mean as an error approximation:
+
+    \begin{equation*}
+        \sigma_{\bar{f}}^2 = \frac{\sigma_f^2}{N}
+    \end{equation*}
+
+    So the error is directly dependent of the variance of our function f. We can reduce this variance by using importance sampling. What this means is splitting f(x) in the following way
+
+    \begin{equation}
+        \label{eq:importance_splitting}
+        f(x) = g(x) \times p(x)
+    \end{equation}
+
+    where p(x) is a probability density, meaning it is normalized in the interval of interest.
+
+    Plugging \eqref{eq:importance_splitting} into \eqref{eq:int} we get the estimation of our integral $Q_n(f)$ as
+
+    \begin{equation*}
+        Q_n(f)=Q_n(g)=\sum_{j=1}^N g(x_j)
+    \end{equation*}
+
+    where $x_j$ is distributed according to p(x).
+    So by choosing p(x) in a way that reduces the variance the estimation can be improved significantly.
+
+    Sometimes it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$.
+    The results obtained by using CDF inversion can be observed in figure \ref{fig:task3-cdf_histogram}.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.8\textwidth]{task3/cdf_histogram}
+        \caption{Histogram of 100000 random generated values distributed according to p(x), and plot of exact function Q($\tau$) for comparison}
+        \label{fig:task3-cdf_histogram}
+
+    \end{figure}
+
+    The histogram is normalized by dividing the counts in each bin with the total number of points and the bin width. $Q(\tau)$ is normalized by solving the equation:
+
+    \begin{equation*}
+        x \int_0^5 \exp(-\tau) d\tau = 1
+    \end{equation*}
+
+    for x and using this constant as a normalization factor for Q. This is done for graphic demonstration purposes only, as the CDF inversion procedure already guarantees the resulting points $x_k$ to follow the normalized probability distribution.
+
 
 %%% End document %%%
 \end{document}

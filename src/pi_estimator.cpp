@@ -39,9 +39,6 @@ double estimate_pi_integration(int N, std::mt19937& rng, Callback&& on_sample) {
 }
 
 int main() {
-
-    std::cout << "cwd: " << std::filesystem::current_path() << "\n";
-
     std::mt19937 rng(std::random_device{}());
 
     std::ofstream out(std::string(PROJECT_ROOT) + "/data/task2/pi_estimation_convergence.csv");
