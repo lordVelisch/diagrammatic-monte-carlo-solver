@@ -118,9 +118,10 @@
 
     Plugging \eqref{eq:importance_splitting} into \eqref{eq:int} we get the estimation of our integral $Q_n(f)$ as
 
-    \begin{equation*}
+    \begin{equation}
+        \label{eq:mc_integral}
         Q_n(f)=Q_n(g)=\sum_{j=1}^N g(x_j)
-    \end{equation*}
+    \end{equation}
 
     where $x_j$ is distributed according to p(x).
     So by choosing p(x) in a way that reduces the variance the estimation can be improved significantly.
@@ -139,11 +140,36 @@
     The histogram is normalized by dividing the counts in each bin with the total number of points and the bin width. $Q(\tau)$ is normalized by solving the equation:
 
     \begin{equation*}
-        x \int_0^5 \exp(-\tau) d\tau = 1
+        \frac{\int_0^5 \exp(-\tau) d\tau = 1}{NORM}
     \end{equation*}
 
-    for x and using this constant as a normalization factor for Q. This is done for graphic demonstration purposes only, as the CDF inversion procedure already guarantees the resulting points $x_k$ to follow the normalized probability distribution.
+    for NORM and using this constant as a normalization factor for Q. The normalization factor therefore is $1-\exp(-5)$.
+
+    Now that we have $p(x)$ and $f(x)$ (the function to integrate) we can easily obtain $g(x)$ through \eqref{eq:importance_splitting} and evaluate the integrals of the task,
+
+    \begin{equation*}
+        I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
+        I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
+        Q(\tau) = \exp(-\tau),
+    \end{equation*}
+
+    using Monte Carlo integration with $N=10^6$ samples drawn via CDF inversion. The error on each estimate is the standard deviation of the mean, $\sigma_{\bar{f}} = \sigma_f/\sqrt{N}$, computed from the sample variance of the integrand. This yields
+
+    \begin{align*}
+        I_1 &= 0.9599 \pm 0.0009, \\
+        I_2 &= 1.7521 \pm 0.0032.
+    \end{align*}
+
+    Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator.
 
 
+    \section{Task 4}
+
+    I am optimizing the delta to minimize the autocorrelation time using data blocking.
+    I evaluate the integrated autocorrelation time at a course grained log grid, to have robust search with approximate minimum.
+    This will leave me with the smallest possible variance for the steps I use.
+    Theoretically the autocorrelation changes depending on which integral I solve, but for now this rough approx is enough.
+
+    Acceptance probability of 1 means either uniform distribution or staying on the same point
 %%% End document %%%
 \end{document}

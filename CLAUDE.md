@@ -42,6 +42,13 @@ If a task doesn't clearly fall into either bucket, ask before starting.
 
 ## Conventions
 
+- When explaining math/statistics in chat, always write formulas in LaTeX
+  as **display equations** (`$$...$$`, own line), never inline `$...$`
+  within a sentence — inline math containing `_{...}` subscripts gets
+  mangled by Markdown's underscore-italics parsing before the math
+  renderer sees it. If a formula must be referenced inline in prose,
+  spell it out in words or use plain Unicode (σ, τ, ², √) instead of
+  inline LaTeX.
 - Idiomatic modern C++: RAII, no raw owning pointers without reason,
   `std::vector`/`std::array` over C arrays, `const`/references used
   properly. Explain *why* when suggesting a more idiomatic pattern.
