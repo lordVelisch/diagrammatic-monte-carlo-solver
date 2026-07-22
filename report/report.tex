@@ -165,6 +165,27 @@
 
     \section{Task 4}
 
+    The goal of this task is to replicate the sampling of $Q(\tau, \alpha)$ using a Markov Chain Monte Carlo method.
+    Why this is necessary can be observed in section \ref{sec:task-3}. In the CDF inversion we had to find a closed form for $\int_{0}^{x} Q(x') dx'$ and solve the result for $x$. While this works for some low dimensional problems like ours, this sometimes becomes impractical or impossible. In these cases we need a Markov Chain procedure, where we generate samples stochastically by some procedure. In this instance the Metropolis algorithm was used, in which the acceptance probability of going from a configuration x to y is given as
+
+    \begin{equation}
+        \label{eq:metropolis}
+        p_{acc}(x\to y)= \min\left\{ 1, \frac{f(y)}{f(x)} \frac{p_{gen}(y\to x)}{p_{gen}(x\to y)} \right\}
+    \end{equation}
+
+    where $f$ is the target distribution. Using this procedure we can directly sample from the normalised distribution $\hat{f}$ without the need for any closed form invertible integral solution, and not even the need to know the normalization constant $Z$ as it is cancelled out in the acceptance probability.
+
+    For the generation I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out.
+
+    Fig adfjasdf shows a histogram of a set of points sampled using this procedure with $\delta=3$.
+
+    Choose delta, so that the whole interval is sampled the quickest -> lowest variance.
+
+    The variance is this -> because it is highly correlated we cannot use this but have to use blocking to find out uncorrelated samples. Used blocking analysis to find out which delta has the shortest autocorrelation time and therefore smallest variance. The results are shown here:
+
+
+
+
     I am optimizing the delta to minimize the autocorrelation time using data blocking.
     I evaluate the integrated autocorrelation time at a course grained log grid, to have robust search with approximate minimum.
     This will leave me with the smallest possible variance for the steps I use.

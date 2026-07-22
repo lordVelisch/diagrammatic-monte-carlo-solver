@@ -19,32 +19,40 @@ double f(const double tau) {
     return std::exp(-tau);
 }
 
-sample_distribution_result sample_distribution(std::mt19937 &rng, const double DELTA, int N = 1'000'000,
-                                               bool write_to_file = false) {
+template <typename Func>
+sample_distribution_result sample_distribution(std::mt19937 &rng, const double DELTA, Func estimation_value_of,
+                                               int N = 1'000'000, bool write_to_file = false) {
     std::uniform_real_distribution<double> random_uniform(0, 1);
 
 
-    double initial_tau = random_uniform(rng);
+    double initial_x = random_uniform(rng);
 
-    std::vector<double> tau_values{initial_tau};
-    tau_values.reserve(N);
+    std::vector<double> A_values{estimation_value_of(initial_x)};
+    A_values.reserve(N);
+
+    double x = initial_x;
 
     size_t rejection_count = 0;
 
     for (int i = 1; i < N; i++) {
-        double tau = tau_values.back();
-        double tau_proposed = tau + DELTA * (random_uniform(rng) - 0.5);
-        if (tau_proposed < 0 || tau_proposed > 5) {
-            tau_values.push_back(tau);
+        double A = A_values.back();
+
+        double x_proposed = x + DELTA * (random_uniform(rng) - 0.5);
+        if (x_proposed < 0 || x_proposed > 5) {
+            A_values.push_back(A);
             rejection_count++;
             continue;
         }
-        double p_acc = std::min(1., f(tau_proposed) / f(tau));
+
+        double A_proposed = estimation_value_of(x_proposed);
+
+        double p_acc = std::min(1., f(x_proposed) / f(x));
 
         if (random_uniform(rng) < p_acc) {
-            tau_values.push_back(tau_proposed);
+            A_values.push_back(A_proposed);
+            x = x_proposed;
         } else {
-            tau_values.push_back(tau);
+            A_values.push_back(A);
             rejection_count++;
         }
     }
@@ -53,9 +61,9 @@ sample_distribution_result sample_distribution(std::mt19937 &rng, const double D
         std::ofstream out(std::string(PROJECT_ROOT) + "/data/task4/histogram.csv");
         out << "tau\n";
 
-        std::copy(tau_values.begin(), tau_values.end(), std::ostream_iterator<double>(out, "\n"));
+        std::copy(A_values.begin(), A_values.end(), std::ostream_iterator<double>(out, "\n"));
     }
-    return {1. - static_cast<double>(rejection_count) / N, tau_values};
+    return {1. - static_cast<double>(rejection_count) / N, A_values};
 }
 
 std::vector<double>::value_type delta_variance(double blocked_variance, int M) {
@@ -63,7 +71,7 @@ std::vector<double>::value_type delta_variance(double blocked_variance, int M) {
 }
 
 block_analysis_result block_analysis(std::mt19937& rng, std::ofstream& block_convergence_output, std::ofstream& out, const int N, double delta) {
-    sample_distribution_result result = sample_distribution(rng, delta, N, true);
+    sample_distribution_result result = sample_distribution(rng, delta, [](double A){return A;}, N, true);
 
     double tol = 1e-6;
 
