@@ -21,7 +21,7 @@ double estimate_pi_area(int N, std::mt19937& rng, Callback&& on_sample) {
     return static_cast<double>(N_circle_count)/N*4;
 }
 
-double f(double x) {
+double target_pdf(double x) {
     return std::sqrt(1-x*x);
 }
 
@@ -31,7 +31,7 @@ double estimate_pi_integration(int N, std::mt19937& rng, Callback&& on_sample) {
 
     double sum=0;
     for (int i=0; i<N;i++) {
-        sum+=f(dist(rng));
+        sum+=target_pdf(dist(rng));
         on_sample(i, 1./(i+1)*sum*4);
     }
 
