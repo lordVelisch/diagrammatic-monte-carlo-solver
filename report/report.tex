@@ -6,6 +6,7 @@
 
 % Load useful packages
 \usepackage{graphicx}                           % Graphics
+\usepackage{subcaption}                         % Sub-figures / grids of plots
 \graphicspath{{figures/}}                       % Look for images in report/figures/
 \usepackage{amsmath}                            % Math
 \usepackage{xcolor}                             % Link color
@@ -14,7 +15,9 @@
 \hypersetup{colorlinks=true, allcolors=custom-blue}
 \usepackage[default]{sourcesanspro}                % Load font
 \usepackage[T1]{fontenc}                        % Special characters
-\usepackage{fancyhdr}                           % Load header, footer package
+\usepackage{fancyhdr}
+\usepackage{float}
+% Load header, footer package
 
 \usepackage{lastpage}                           % Footer note
 \usepackage{lipsum}                             % For dummy text
@@ -59,30 +62,40 @@
     \newpage
     \section{Task 2: Estimating $\pi$}                              % Example sections, subsections
 
-    We can estimate $\pi$ using multiple different methods. The two that are used here are the area method and the intergration method.
+    The goal of this task is to estimate $\pi$ using the area method and 1d Monte Carlo integration. Cite todo. Furthermore the convergence speed is observed by gradually increasing the number of samples $N$ and calculating the resulting approximation at each $N$.
 
-    \subsection{Convergence}
+    As each sample is a random draw, they are all uncorrelated and we can calculate the error of on approximation run using the formular for the variance of the mean (see below), but for demonstrative purposes the distribution of mean values is calculated explicitly by repeating this calculation $M=1000$ times. The mean values will be used to calculate the variance of the mean and visually show the distribution.
 
-    \begin{figure}[h]
+    \subsection{Results}
+
+    Figure \ref{fig:task2-convergence} shows the convergence of a single run of the methods to the true value of $\pi$. It is clearly visually observable, that the integration method converges faster than the area method.
+
+    In figure \ref{fig:task2-distribution} the distribution of the mean values of both methods with $N=1,000,000$ can be observed in a historgram. By the smaller spread (variance) is is clearly visible that the integration method results in a smaller variance. Both methods show normal distributions, centered around the true value of $\pi$, which means they converge to $\pi$ as N goes to infinity.
+
+    The resulting mean values are:
+
+    \begin{align*}
+        \bar{\pi_{area}} = 3.1416 \pm 0.0016 \\
+        \bar{\pi_{int}} = 3.14154 \pm 0.00091
+    \end{align*}
+
+    where the error is the standard deviation of the means (square root of the variance).
+
+    With these results it can be concluded that the integration method is more effective, which means the approximation is on average closer to the real result given the same $N$.
+
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{task2/pi_convergence}
         \caption{Convergence of the area and integration methods to $\pi$.}
         \label{fig:task2-convergence}
     \end{figure}
 
-    \begin{figure}[h]
+    \begin{figure}[h!]
         \centering
         \includegraphics[width=0.8\textwidth]{task2/pi_distribution}
         \caption{Distribution of the area and integration methods to $\pi$.}
         \label{fig:task2-distribution}
-
     \end{figure}
-
-    Gaussian/Normal distribution (right?) The second one is better/ more effective, smaller variance.
-
-    Mean value is pi if N goes to infinity -> unbiased.
-
-    Could do some importance sampling but no huge gains expected from that
 
     \section{Task 3}\label{sec:task-3}
 
@@ -103,9 +116,10 @@
 
     There are multiple ways to calculate the error of the approximation that will be discussed in more detail later. For now we will look at the simplest way. As each random draw $x_k$ is random they are uncorrelated and we can write use the variance of the mean as an error approximation:
 
-    \begin{equation*}
+    \begin{equation}
+        \label{eq:variance_of_mean}
         \sigma_{\bar{f}}^2 = \frac{\sigma_f^2}{N}
-    \end{equation*}
+    \end{equation}
 
     So the error is directly dependent of the variance of our function f. We can reduce this variance by using importance sampling. What this means is splitting f(x) in the following way
 
@@ -165,32 +179,103 @@
 
     \section{Task 4}
 
-    The goal of this task is to replicate the sampling of $Q(\tau, \alpha)$ using a Markov Chain Monte Carlo method.
-    Why this is necessary can be observed in section \ref{sec:task-3}. In the CDF inversion we had to find a closed form for $\int_{0}^{x} Q(x') dx'$ and solve the result for $x$. While this works for some low dimensional problems like ours, this sometimes becomes impractical or impossible. In these cases we need a Markov Chain procedure, where we generate samples stochastically by some procedure. In this instance the Metropolis algorithm was used, in which the acceptance probability of going from a configuration x to y is given as
+    \subsection{Description and methods}
+
+    The goal of this task is to replicate the sampling of $Q(\tau, \alpha)$ using a Markov Chain Monte Carlo method. Why this is necessary can be observed in section \ref{sec:task-3}. In the CDF inversion we had to find a closed form for $\int_{0}^{x} Q(x') dx'$ and solve the result for $x$. While this works for some low dimensional problems like ours, this sometimes becomes impractical or impossible. In these cases we need a Markov Chain procedure, where we generate samples stochastically by some procedure. (TODO kind of wrong, chain is the important thing)) In this instance the Metropolis algorithm was used, in which the acceptance probability of going from a configuration x to y is given as
 
     \begin{equation}
         \label{eq:metropolis}
         p_{acc}(x\to y)= \min\left\{ 1, \frac{f(y)}{f(x)} \frac{p_{gen}(y\to x)}{p_{gen}(x\to y)} \right\}
     \end{equation}
 
-    where $f$ is the target distribution. Using this procedure we can directly sample from the normalised distribution $\hat{f}$ without the need for any closed form invertible integral solution, and not even the need to know the normalization constant $Z$ as it is cancelled out in the acceptance probability.
+    where $f$ is the target distribution. Using this procedure we can directly sample from the normalised distribution $\hat{f}$ without the need for any closed form invertible integral solution, and not even the need to know the normalization constant $Z$ as it is cancelled out in the acceptance probability. \\
 
-    For the generation I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out.
+    Using the proposed generation probability of just $p(x)=U(0,5)$ works and generates the correct distribution but has a tiny acceptance probability as the target distribution is exponential and therefore has most points in a small region. This can be improved by generating a proposed displacement inside a box around the current iteration point, instead of uniformly generating a new proposal point in the whole interval. I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out. \\
 
-    Fig adfjasdf shows a histogram of a set of points sampled using this procedure with $\delta=3$.
+    %todo: need to introduce the observable A at some point
 
-    Choose delta, so that the whole interval is sampled the quickest -> lowest variance.
+    $\delta$ is a degree of freedom in this procedure and it effects, how big the proposed steps are in the markov chain, so this procedure does not automatically create an acceptance probability that works better than a uniform distribution. Also the individual samples are now highly correlated, as they directly depend on the previous sample. This means we cannot just use equation \eqref{eq:variance_of_mean} anymore to calculate the error as this will greatly underestimate the error. One way to solve this is to perform blocking analysis. We separate our $N$ samples into $M$ blocks of $\frac{N}{M}=B$ samples each. If $B$ is larger than the integrated autocorrleation time $\tau_{int}$ of the observable which is sampled, this means that each block is uncorrelated to any other and the trivial formula for the standard deviation of the mean can be recovered in the following way:
 
-    The variance is this -> because it is highly correlated we cannot use this but have to use blocking to find out uncorrelated samples. Used blocking analysis to find out which delta has the shortest autocorrelation time and therefore smallest variance. The results are shown here:
+    \begin{equation*}
+        \sigma_{\bar{A}}^2 = \frac{\sigma_{A^{(B)}}^2}{M}
+    \end{equation*}
+
+    where $A^{(B)}$ is the mean value of observable $A(x)$ in block $B$. \\
+
+    If $\tau_{int}$ is know we can also define an effective number of independent samples $M_{eff}$ and calculate the variance of the mean using $\sigma{\bar{A}}^2 = \frac{\sigma{A}}{M_{eff}}$ where
+
+    \begin{equation}
+        \label{eq:m_eff}
+        M_{eff} = \frac{N}{2\tau_{int}}
+    \end{equation}
 
 
+    From this we can see that minimizing $\tau_{int}$ is equivalent to maximizing the amount of independent samples for a given $N$ and therefore leads to the lowest possible statistical error in the sample average. Even though this kind of optimization is not necessary for the simple task given, it is nevertheless done for educational purposes in the following way: \\
 
+    Trial values for $\delta$ are chosen from a logarithmic distribution from 0.1 to 100. For each $\delta$ the autocorrelation time is calculated by doing a block analysis. The mean value and variance of the block average for a gradually increasing block size $B$ are calculated with a sample size of $N=1,000,000$. Block sizes where $M<50$ are discarded due to statistical noise. At some block size the variance converges indicating that at this size the blocks are uncorrelated. This value can be inserted into equation \eqref{eq:m_eff} to get $\tau_{int}$. The $\delta$ with the lowest $\tau_{int}$ can be computed this way. This analysis of course quite computationally expensive for real problems and therefore only really makes sense as a starting point if multiple MC simulations for similar problems are computed where the result can be reused. Also the block analysis part for a given $\delta$ is necessary to compute an accurate statistical average.
 
-    I am optimizing the delta to minimize the autocorrelation time using data blocking.
-    I evaluate the integrated autocorrelation time at a course grained log grid, to have robust search with approximate minimum.
-    This will leave me with the smallest possible variance for the steps I use.
-    Theoretically the autocorrelation changes depending on which integral I solve, but for now this rough approx is enough.
+    \subsection{Results}
 
-    Acceptance probability of 1 means either uniform distribution or staying on the same point
+    Fig \ref{fig:task4-histogram} shows a histogram of a set of points sampled using this procedure using \eqref{eq:metropolis} with $\delta=10$ and $N=1,000,000$.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{task4/histogram.png}
+        \caption{Histogram of points sample using the Metropolis Algorithm according to our target distribution}
+        \label{fig:task4-histogram}
+    \end{figure}
+
+    The $\delta$ minimization was performed using $N=1,000,000$ samples and using the observable $A(x)=x$ (as we use in I1) and resulted in an optimal value of
+
+    \begin{equation*}
+        \delta_{opt}=10
+    \end{equation*}
+
+    Figure \ref{fig:task4-autocorrelation} shows the computed autocorrelation time as a function of the given step proposal interval size $\delta$. Both very small and very large $\delta$ lead to strongly correlated samples: for small $\delta$ the chain moves in tiny steps and only explores $\tau$-space diffusively, while for large $\delta$ most proposed moves land outside the bulk of the target distribution and are rejected, so the chain repeatedly stays at the same point. The minimum in between confirms $\delta_{opt}=10$.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{task4_autocorrelation_delta.pdf}
+        \caption{Integrated autocorrelation time $\tau_{int}$ of $A(x)=x$ as a function of the proposal step size $\delta$, obtained from the block analysis below. The minimum at $\delta \approx 10$ gives the optimal proposal width.}
+        \label{fig:task4-autocorrelation}
+    \end{figure}
+
+    Figure \ref{fig:task4-block-analysis} shows the underlying block analysis for a representative subset of the tested $\delta$ values, illustrating how this minimum is found. For each $\delta$ the block variance $\sigma_{A^{(B)}}^2$ is plotted against block size $B$ and compared to the asymptotic ("infinite-block") variance $\text{var\_inf}$, shown as the horizontal line. For very small $\delta=0.1$ the samples are so strongly correlated that the block variance has not yet plateaued even at the largest accessible block size, indicating a very large $\tau_{int}$. As $\delta$ increases the block variance reaches the plateau at ever smaller $B$; $\delta=10$ reaches it earliest, consistent with it being the optimal choice, while for the overly large $\delta=100$ more block-averaging is again needed to converge, mirroring the rise seen on the right-hand side of Fig.~\ref{fig:task4-autocorrelation}.
+
+    \begin{figure}[H]
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task4/0.1-block_analysis.pdf}
+            \caption{$\delta=0.1$}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task4/1.0-block_analysis.pdf}
+            \caption{$\delta=1.0$}
+        \end{subfigure}
+        \\[0.5em]
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task4/10.0-block_analysis.pdf}
+            \caption{$\delta=10.0$ (optimal)}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task4/100.0-block_analysis.pdf}
+            \caption{$\delta=100.0$}
+        \end{subfigure}
+        \caption{Block analysis for four representative proposal step sizes $\delta$: block variance $\sigma_{A^{(B)}}^2$ vs.\ block size $B$, compared to the asymptotic variance (orange line). $\delta=0.1$ and $\delta=1.0$ bracket the diffusive, strongly-correlated regime; $\delta=10.0$ converges fastest; $\delta=100.0$ shows the onset of the low-acceptance regime. The remaining tested values ($\delta=0.3,3.0,30.0$) follow the same trend and are omitted here for brevity.}
+        \label{fig:task4-block-analysis}
+    \end{figure}
+
+    By using the same equations as in section \ref{sec:task-3} the result of the integrals are obtained as:
+
+    \begin{align*}
+        I_1 &= 0.9600 \pm 0.0032, \\
+        I_2 &= 1.7577 \pm 0.0097.
+    \end{align*}
+
+    The difference between the calculated $I_1$ ad the correct result is $\approx$ 0.00045 and therefore lies easily in the error bars and $I_2$ is $\approx$ 0.0069 away from the correct result, which is again in the bounds of the expected error. The errors are the standard deviation resulting from the block analysis are therefore statistical in nature which means outliers are to be expected. \\
+
+    The task also asks the question of how we can achieve an acceptance percentage of 1. We could do that by always proposing the same sample and never moving anywhere in the interval. This would of course not lead to the desired result. If the acceptance percentage is anything but 0 or 100 the correct distribution will be samples as $N$ goes to infinity.
 %%% End document %%%
 \end{document}

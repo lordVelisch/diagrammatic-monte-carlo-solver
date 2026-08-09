@@ -15,6 +15,7 @@ def plot_histogram(df_to_plot):
 
     print(f"Mean value is {mean}")
     print(f"Variance is {variance}")
+    print(f"SD {np.sqrt(variance)}")
 
     plt.legend()
 

@@ -12,7 +12,6 @@ const double NORMALIZATION_FACTOR = 1-std::exp(-5.0);
 double sample_tau(std::mt19937& rng) {
     std::uniform_real_distribution<double> dist(0,1);
     double r = dist(rng);
-    ;
     double tau = -std::log(1-r*NORMALIZATION_FACTOR);
     return tau;
 }

@@ -78,7 +78,7 @@ struct block_variance_result {
 
 template <typename Func>
 block_analysis_result block_analysis(std::mt19937& rng, const int N, double delta, Func observable, std::ofstream* block_convergence_output = nullptr, std::ofstream* delta_output_file = nullptr) {
-    sample_distribution_result result = sample_distribution(rng, delta, observable, N, true);
+    sample_distribution_result result = sample_distribution(rng, delta, observable, N, false);
 
     std::vector<double> cumulative_sum {0.};
     cumulative_sum.resize(result.values.size()+1);
@@ -168,40 +168,37 @@ int main() {
     std::random_device rd;
     std::mt19937 rng(rd());
 
-    /*
-    sample_distribution_result result = sample_distribution(rng, 0.3, 1, 1'000'000, true);
+    // just for historgram
+    sample_distribution_result result = sample_distribution(rng, 10, [](double x) {return x;}, 1'000'000, true);
 
-    std::cout << "Acceptance ratio: " << result.acceptance_ratio << "\n";
-    */
+     double delta_opt = tau_int_optimization(rng, [](const double A){return A;});
 
-    double delta_opt = tau_int_optimization(rng, [](const double A){return A;});
+     std::cout << "The optimal delta, that is minimizing the autocorrelation times is: " << delta_opt << "\n";
 
-    std::cout << "The optimal delta, that is minimizing the autocorrelation times is: " << delta_opt << "\n";
+     // solving integral I1:
+     int N = 1'000'000;
+     auto x_func = [](double x) {return x;};
+     std::vector<double> samples_1 = sample_distribution(rng, delta_opt, x_func, N).values;
+     double x_mean = std::accumulate(samples_1.begin(), samples_1.end(), .0)/N;
+     double x_sigma = std::sqrt(block_analysis(rng, N, delta_opt, x_func).mean_variance);
 
-    // solving integral I1:
-    int N = 1'000'000;
-    auto x_func = [](double x) {return x;};
-    std::vector<double> samples_1 = sample_distribution(rng, delta_opt, x_func, N).values;
-    double x_mean = std::accumulate(samples_1.begin(), samples_1.end(), .0)/N;
-    double x_sigma = std::sqrt(block_analysis(rng, N, delta_opt, x_func).mean_variance);
+     double I1 = Z*x_mean;
 
-    double I1 = Z*x_mean;
+     std::cout << "Integral I1 result: " << I1 << " pm " << x_sigma <<"\n";
+     std::cout << "Difference to exact: " << I1 - I1_exact << "\n";
+     std::cout << "\n";
 
-    std::cout << "Integral I1 result: " << I1 << " pm " << x_sigma <<"\n";
-    std::cout << "Difference to exact: " << I1 - I1_exact << "\n";
-    std::cout << "\n";
+     // solving integral I2:
 
-    // solving integral I2:
+     auto x2_func = [](double x) {return x*x;};
 
-    auto x2_func = [](double x) {return x*x;};
+     std::vector<double> samples_2 = sample_distribution(rng, delta_opt, x2_func, N).values;
+     double x2_mean = std::accumulate(samples_2.begin(), samples_2.end(), .0)/N;
+     double x2_sigma = std::sqrt(block_analysis(rng, N, delta_opt, x2_func).mean_variance); // the delta_opt is used from <x>_Q because it is not this important
 
-    std::vector<double> samples_2 = sample_distribution(rng, delta_opt, x2_func, N).values;
-    double x2_mean = std::accumulate(samples_2.begin(), samples_2.end(), .0)/N;
-    double x2_sigma = std::sqrt(block_analysis(rng, N, delta_opt, x2_func).mean_variance); // the delta_opt is used from <x>_Q because it is not this important
-
-    double I2 = Z*x2_mean;
-    std::cout << "Integral I2 result: " << I2 << " pm " << x2_sigma << "\n";
-    std::cout << "Difference to exact: " << I2 - I2_exact << "\n";
+     double I2 = Z*x2_mean;
+     std::cout << "Integral I2 result: " << I2 << " pm " << x2_sigma << "\n";
+     std::cout << "Difference to exact: " << I2 - I2_exact << "\n";
 
     return 0;
 }
