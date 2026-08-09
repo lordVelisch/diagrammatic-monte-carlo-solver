@@ -68,7 +68,14 @@
   untracked the previously-committed `data/task2/pi_estimation_convergence.csv`.
 - Report for Task 3 not started yet.
 
+### 2026-08-09
+
+- Task 4 was implemented to completion
+- Did a blocking analysis method and optimized step size delta to minimize the autocorrelation time
+- Results match and variance from the blocking analysis looks correct
+- Report finished in its raw form (some improvements to be done later)
+
 ### Next
 
-- Write up Task 3 in `report/task3.tex`.
-- Then move on to Task 4 (MCMC / Metropolis-Hastings).
+- Implement and understand Task5
+- Task 3 report still needs some refinement
