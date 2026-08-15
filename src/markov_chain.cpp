@@ -14,11 +14,17 @@ struct block_analysis_result {
     double autocorrelation_time, mean_variance;
 };
 
+struct block_variance_result {
+    int B;
+    double mean_variance;
+};
+
 double target_pdf(const double x) {
     return std::exp(-x);
 }
 
 const double Z = 1-std::exp(-5); // normalization factor
+
 
 template <typename Func>
 sample_distribution_result sample_distribution(std::mt19937 &rng, const double delta, Func observable,
@@ -70,11 +76,6 @@ sample_distribution_result sample_distribution(std::mt19937 &rng, const double d
 double delta_variance(double blocked_variance, int M) {
     return blocked_variance * std::sqrt(2. / (M - 1));
 }
-
-struct block_variance_result {
-    int B;
-    double mean_variance;
-};
 
 template <typename Func>
 block_analysis_result block_analysis(std::mt19937& rng, const int N, double delta, Func observable, std::ofstream* block_convergence_output = nullptr, std::ofstream* delta_output_file = nullptr) {
