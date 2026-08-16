@@ -27,8 +27,8 @@ struct block_variance_result {
     double mean_variance;
 };
 
-double target_pdf(D diag) {
-    return std::exp(-diag.tau * diag.alpha);
+double target_pdf(D d) {
+    return std::exp(-d.tau * d.alpha);
 }
 
 void change_tau(D &diag, const double delta, std::mt19937 &rng) {
@@ -75,19 +75,19 @@ double delta_variance(double blocked_variance, int M) {
 }
 
 template<typename Func>
-block_analysis_result block_analysis(Func observable, std::vector<D> &diags) {
-    int N = diags.size();
+block_analysis_result block_analysis(Func observable, std::vector<D> &d_values) {
+    int N = d_values.size();
 
     std::vector<double> observables;
     observables.reserve(N);
 
     //surely there is a better way
-    for (const auto &diag: diags) {
+    for (const auto &diag: d_values) {
         observables.push_back(observable(diag));
     }
 
     std::vector<double> cumulative_sum{0.};
-    cumulative_sum.resize(diags.size() + 1);
+    cumulative_sum.resize(d_values.size() + 1);
 
     std::partial_sum(observables.begin(), observables.end(), cumulative_sum.begin() + 1);
 
@@ -163,7 +163,7 @@ int main() {
     std::random_device rd;
     std::mt19937 rng(rd());
 
-    std::vector<D> diags = sample_distribution(rng, 10, 1'000'000);
+    std::vector<D> d_values = sample_distribution(rng, 10, 1'000'000);
 
     std::ofstream histogram_output(std::string(PROJECT_ROOT) + "/data/task5/histogram.csv");
     histogram_output << "alpha,tau\n";
@@ -171,7 +171,7 @@ int main() {
     std::vector<D> diags_alpha_1;
     std::vector<D> diags_alpha_0_5;
 
-    std::partition_copy(diags.begin(), diags.end(), std::back_inserter(diags_alpha_1),
+    std::partition_copy(d_values.begin(), d_values.end(), std::back_inserter(diags_alpha_1),
                         std::back_inserter(diags_alpha_0_5), [](const D &diag) {
                             return diag.alpha == 1;
                         });
@@ -196,7 +196,7 @@ int main() {
     block_analysis_result result4 = block_analysis([](const D &diag) { return diag.tau * diag.tau; }, diags_alpha_0_5);
     report_integral("I4 (alpha=0.5)", result4, Z_2, I4_exact);
 
-    for (const auto [alpha, tau]: diags) {
+    for (const auto [alpha, tau]: d_values) {
         histogram_output << alpha << "," << tau << "\n";
     }
     return 0;

@@ -17,6 +17,9 @@
 \usepackage[T1]{fontenc}                        % Special characters
 \usepackage{fancyhdr}
 \usepackage{float}
+
+\usepackage{tikz}
+
 % Load header, footer package
 
 \usepackage{lastpage}                           % Footer note
@@ -101,6 +104,22 @@
 
     The goal of this exercise is to approximate following integrals using MC intergration:
 
+    \begin{equation*}
+        I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
+        I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
+    \end{equation*}
+
+    with
+
+    \begin{equation}
+        \label{eq:Q}
+        I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
+        I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
+        Q(\tau) = \exp(-\alpha\tau),
+    \end{equation}
+
+    where $\alpha$ is set to 1 for this task.
+
     In Monte Carlo integration we approximate the integral of a function as the expectation value over a certain interval. For the interval [0,1]:
 
     \begin{equation}
@@ -177,7 +196,7 @@
     Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator.
 
 
-    \section{Task 4}
+    \section{Task 4}\label{sec:task4}
 
     \subsection{Description and methods}
 
@@ -276,6 +295,58 @@
 
     The difference between the calculated $I_1$ ad the correct result is $\approx$ 0.00045 and therefore lies easily in the error bars and $I_2$ is $\approx$ 0.0069 away from the correct result, which is again in the bounds of the expected error. The errors are the standard deviation resulting from the block analysis are therefore statistical in nature which means outliers are to be expected. \\
 
-    The task also asks the question of how we can achieve an acceptance percentage of 1. We could do that by always proposing the same sample and never moving anywhere in the interval. This would of course not lead to the desired result. If the acceptance percentage is anything but 0 or 100 the correct distribution will be samples as $N$ goes to infinity.
+    Using CDF inversion we can achieve an acceptance ratio of 1 (follow up on that)
+
+    \section{Task 5}
+    \label{sec:task-5}
+
+    The goal of this task is to introduce the notation of Diagrammatic Monte Carlo. We start by considering only $0^{th}$ order diagrams of the following form:
+
+    \begin{equation}
+        \label{eq:0th_order_D}
+        \begin{tikzpicture}[baseline=-0.5ex]
+            % Draw the diagram line
+            \draw[thick] (0,0) -- (3.5,0);
+
+            % Node labels below the line
+            \node[below] at (0,0) {$0$};
+            \node[below] at (1.75,0) {$\alpha$};
+            \node[below] at (3.5,0) {$\tau$};
+        \end{tikzpicture}
+        \quad = D_0(\tau, \alpha) = \exp(-\alpha \tau)
+    \end{equation}
+
+    where $D_0$ is the weight of the diagram. It takes a similar form as \eqref{eq:Q}, but in this task $\alpha$ will not be fixed, but also be taken into account in the Metropolis procedure. To achieve this, in each iteration either $\tau$ or $\alpha$ is updated with equal probability. The procedure for updating $\tau$ stays the same as in \ref{sec:task4}, while the proposed $\alpha$ value is drawn uniformly in the set ${0.5,1}$.
+
+    The resulting histograms, split by the $\alpha$ value active at each sample, are given in figure \ref{fig:task5-alpha}.
+
+    \begin{figure}[H]
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task5/histogram_alpha_1}
+            \caption{$\alpha=1$}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.48\textwidth}
+            \includegraphics[width=\textwidth]{task5/histogram_alpha_0_5}
+            \caption{$\alpha=0.5$}
+        \end{subfigure}
+        \caption{Resulting histograms of the DMC simulation using the given update scheme for $\alpha$ and $\tau$, split by the $\alpha$ value of each sample and compared to the corresponding normalised $Q(\tau,\alpha)$.}
+        \label{fig:task5-alpha}
+    \end{figure}
+
+    The correctness of the code can be verified by again calculating the integral results from the samples with the corresponding $\alpha$ values, using the same block analysis as in section \ref{sec:task4} to obtain the error bars. Of course this will also give two new integration results corresponding to the integral associated with $Q(\alpha=0.5, \tau)$, which we call $I_3$ and $I_4$ in analogy to $I_1$ and $I_2$.
+
+    The results are
+
+    \begin{align*}
+        I_1 &= 0.9729 \pm 0.0041, \\
+        I_2 &= 1.7953 \pm 0.0138, \\
+        I_3 &= 2.8600 \pm 0.0102, \\
+        I_4 &= 7.3350 \pm 0.0424.
+    \end{align*}
+
+    $I_3$ and $I_4$ agree with the analytic values $I_3 \approx 2.8508$ and $I_4 \approx 7.2990$ within one standard deviation. $I_1$ and $I_2$ are somewhat further off, at $\approx 3.2$ and $\approx 3.2$ standard deviations from $I_1 \approx 0.9596$ and $I_2 \approx 1.7507$ respectively. This is a larger deviation than seen in section \ref{sec:task4}, but still consistent with a statistical fluctuation of a single run rather than a systematic error.
+
 %%% End document %%%
 \end{document}
