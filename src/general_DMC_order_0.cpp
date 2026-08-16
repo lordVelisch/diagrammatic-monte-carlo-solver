@@ -45,7 +45,7 @@ void change_alpha(D &diag, std::mt19937 &rng) {
     diag.alpha = random_bernoulli(rng) ? 0.5 : 1;
 }
 
-std::vector<D> sample_distribution(std::mt19937 &rng, const double delta, int N = 1'000'000) {
+std::vector<D> sample_diagrams(std::mt19937 &rng, const double delta, int N = 1'000'000) {
     std::uniform_real_distribution<> random_uniform(0, 1);
     std::bernoulli_distribution random_bernoulli(0.5);
 
@@ -163,7 +163,7 @@ int main() {
     std::random_device rd;
     std::mt19937 rng(rd());
 
-    std::vector<D> d_values = sample_distribution(rng, 10, 1'000'000);
+    std::vector<D> d_values = sample_diagrams(rng, 10, 1'000'000);
 
     std::ofstream histogram_output(std::string(PROJECT_ROOT) + "/data/task5/histogram.csv");
     histogram_output << "alpha,tau\n";
