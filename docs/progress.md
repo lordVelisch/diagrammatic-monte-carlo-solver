@@ -75,7 +75,7 @@
 - Results match and variance from the blocking analysis looks correct
 - Report finished in its raw form (some improvements to be done later)
 
-### Next
+### 2026-08-multiday
 
-- Implement and understand Task5
-- Task 3 report still needs some refinement
+- Task 5 is fully implemented
+- Task 6 is also nearly completely implemented, but is missing some fine tuning and improvement which is the current goal.
