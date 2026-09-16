@@ -9,14 +9,13 @@
 #include <vector>
 #include <numeric>
 
-const double Z0 = 1 - std::exp(-5); // normalization factor for 0th order diagram
-const double Z2 = 0.782413501449566; // normalization factor for 2nd order diagram
+const double Z0_analytical = 1 - std::exp(-5); // normalization factor for 0th order diagram
+const double Z2_analytical = 0.782413501449566; // normalization factor for 2nd order diagram
 
 const double P_add = 0.1;
 const double P_rem = 0.1;
 
 const double DELTA = 10;
-// when to do it like this vs using define vs using it as function input? I am doing this now so that I dont have to pass it always
 
 // I guess it would be good to do a general diagram and specific implementations but for now I will just do 1, but I am not sure inheritance is not a bit overkill here.
 struct D {
@@ -31,7 +30,7 @@ struct sampling_point {
 };
 
 bool is_valid(D d) {
-    // dont hardcode the 5
+    // todo dont hardcode the 5
     if (d.order == 0)
         return d.tau >= 0 && d.tau <= 5;
     if (d.order == 2)
@@ -140,19 +139,24 @@ int main() {
     const size_t order_0_count = std::count_if(sample_values.begin(), sample_values.end(),
                                                [](sampling_point p) { return p.order == 0; });
     const size_t order_2_count = sample_values.size() - order_0_count;
-
     std::cout << "Ratio of expected order 0 diagrams vs actual order 0 diagrams: \n";
-    std::cout << "Expected: " << Z0 / (Z0 + Z2) << "\n";
+    std::cout << "Expected: " << Z0_analytical / (Z0_analytical + Z2_analytical) << "\n";
     std::cout << "Actual: " << static_cast<double>(order_0_count) / (order_0_count + order_2_count) << "\n";
 
-    std::cout << "Mean result is: " << mean_1 << "\n";
+    std::cout << "Mean result for I1 is: " << mean_1 << "\n";
+    std::cout << "Mean result for I2 is: " << mean_2 << "\n";
 
-    double I_1 = mean_1*(Z0+Z2);
-    double I_2 = mean_2*(Z0+Z2);
+    const double Z = Z0_analytical*N/order_0_count;
 
-    printf("I1: %f\nI2: %f", I_1, I_2);
+    double I_1_analytic_normalized = mean_1*(Z0_analytical+Z2_analytical);
+    double I_2_analytic_normalized = mean_2*(Z0_analytical+Z2_analytical);
 
-    //todo: here I need to multiply by the normalization constant
+    double I_1 = mean_1*Z;
+    double I_2 = mean_2*Z;
+
+    printf("Calculated through analytic normalization:\nI1: %f\nI2: %f\n", I_1_analytic_normalized, I_2_analytic_normalized);
+    printf("Estimated Z: \nI1: %f\nI2: %f\n", I_1_analytic_normalized, I_2_analytic_normalized);
+
     //todo: to calculate the standard deviation I have to do a block analysis again. I was thinking about generalizing it in a separate file and reusing it since it keep coming up, but need to finalize the datatype first I guess.
 
     for (const auto diag: sample_values) {
