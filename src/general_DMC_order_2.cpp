@@ -67,7 +67,6 @@ void add_beta(D &d_new, D &d_curr, std::mt19937 &rng, double &p_acc) {
     }
 
     if (d_curr.order == 0) {
-        // this already caused issues with p_acc
         d_new.order = 2;
         d_new.tau_1 = random_uniform(rng) * 5;
         d_new.tau_2 = (5 - d_new.tau_1) * random_uniform(rng) + d_new.tau_1;
