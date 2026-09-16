@@ -15,7 +15,7 @@ x = np.linspace(x_start, x_end, 1000)
 fig, ax = plt.subplots()
 
 ax.hist(df["value"], bins=50, color="tab:blue", alpha=0.6, label="samples", density=True)
-ax.plot(x, p(x), color="tab:red", label="exact (normalized) $Q(\\tau)$")
+ax.plot(x, p(x), color="tab:red", label="$p(\\tau)$")
 
 ax.set_xlabel(r"$\tau$")
 ax.set_ylabel("probability density")

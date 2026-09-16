@@ -40,7 +40,7 @@
 \fancyfoot[C]{Footer center}                                 % Footer center
 \fancyfoot[R]{\thepage/\pageref{LastPage}}      % Footer right
 
-
+\usepackage{parskip}
 
 %% CONTACT: zid.univie.ac.at
 %% KONTAKT: zid.univie.ac.at
@@ -65,15 +65,96 @@
     \newpage
     \section{Task 2: Estimating $\pi$}                              % Example sections, subsections
 
-    The goal of this task is to estimate $\pi$ using the area method and 1d Monte Carlo integration. Cite todo. Furthermore the convergence speed is observed by gradually increasing the number of samples $N$ and calculating the resulting approximation at each $N$.
+    \subsection{Task description and methods}
 
-    As each sample is a random draw, they are all uncorrelated and we can calculate the error of on approximation run using the formular for the variance of the mean (see below), but for demonstrative purposes the distribution of mean values is calculated explicitly by repeating this calculation $M=1000$ times. The mean values will be used to calculate the variance of the mean and visually show the distribution.
+    The goal of this task is to estimate $\pi$ using the area method and 1D Monte Carlo integration. Furthermore the convergence speed of each method is observed by gradually increasing the number of samples $N$ and calculating the resulting approximation at each $N$.
+
+    The tool we use to calculate $\pi$ is Monte Carlo integration. This method is now elaborated as the following tasks depend on it. Suppose we want to integrate a function $f(x)$ on the interval $\Omega$ where x can have any number of dimensions. We can multiply the integral of $f(x)$ by 1 in the following way:
+
+    \begin{equation}
+        \label{eq:int_base}
+        \int_{\Omega} f(x) dx = \int_\Omega \frac{f(x)}{p(x)} p(x) dx
+    \end{equation}
+
+    where $p(x)$ is a probability density, meaning
+
+    \begin{equation*}
+        \int_{\Omega} p(x)= 1 dx
+    \end{equation*}
+
+    By the law of large numbers we can write \eqref{eq:int_base} as the expactation value of $\frac{f(x)}{p(x)}$:
+
+    \begin{equation}
+        \label{eq:expect_value}
+        \langle \frac{f(x)}{p(x)} \rangle_{p} = \frac{1}{N} \sum_{i=1}^N \frac{f(x_i)}{p(x_i)} \qquad x_i \propto p(x)
+    \end{equation}
+
+    for large $N$ where $x_i$ are randomly drawn from the distribution $p(x)$.
+
+    If $p(x)$ is a uniform distribution it is a constant of $\omega$ where $\omega$ is the interval length and can be pulled on the left side resulting in the equation
+    
+    \begin{equation}
+        \label{eq:int_concrete}
+        \int_{\Omega} f(x) dx = \frac{\omega}{N} \sum_{i=1}^N f(x_i)
+    \end{equation}
+
+    We compare 2 different ways to use this integration to estimate $\pi$.
+
+    \subsubsection{"Integration" method}
+    Calculating $\pi/4 = \int_0^1 \sqrt{1-x^2} dx$ using \eqref{eq:int_concrete}
+    \subsubsection{Area method}
+    Another method is to integrate $\int_0^1\int_0^1 f(x,y) dx dy$ where
+
+    \begin{equation*}
+        \[
+            f(x,y) = \begin{cases}
+                         1 & \text{if } x^2 + y^2 \le 1, \\
+                         0 & \text{otherwise.}
+            \end{cases}
+        \]
+    \end{equation*}
+
+    Again inserting this into \eqref{eq:int_concrete} results into
+
+    \begin{equation*}
+        \int_0^1\int_0^1 f(x,y) dx dy = 1/N \sum_{i=1}^N f(x_i, y_i)
+    \end{equation*}
+
+    By the definition of $f(x)$ the sum corresponds to the number of samples $x_i$ that land inside of the unit circle, which makes the result of this calculation $\frac{\text{\# samples inside the unit circle}}{\text{\# total number of samples}(N)}
+    \}$, which is a more intuitive way to think about this method.
+
+    \subsubsection{Error}
+
+    As MC integration is a stochastic method we introduce statistical errors with a finite number of samples $N$. We can quantize this error by using the standard deviation of the mean $\sigma_{\bar{f}}$ where $\bar{f}$ is the expectation value resulting from \eqref{eq:expect_value}. For uncorrelated measurements the standard deviation can be calculated in the following way:
+
+    \begin{equation}
+        \label{eq:variance_of_mean}
+        \sigma_{\bar{f}} = \frac{\sigma_f}{\sqrt{N}}
+    \end{equation}
+    
+    What this implies, is that an observable with a smaller variance has a smaller statistical error for the estimation. This is the motivation behind using a probability distribution $p(x)$ that minimizes the variance of $\frac{f(x)}{p(x)}$ in equation \eqref{eq:expect_value}. This is called importance sampling and will be used in later tasks.
 
     \subsection{Results}
 
-    Figure \ref{fig:task2-convergence} shows the convergence of a single run of the methods to the true value of $\pi$. It is clearly visually observable, that the integration method converges faster than the area method.
+    Using a uniform distribution from 0 to 1 with a Mersenne Twister number generation (cite) the methods described above where implemented and the resulting estimation of $\pi$ is given at a respective sample size $N$. The results of this are shown in \ref{fig:task2-convergence}.
 
-    In figure \ref{fig:task2-distribution} the distribution of the mean values of both methods with $N=1,000,000$ can be observed in a historgram. By the smaller spread (variance) is is clearly visible that the integration method results in a smaller variance. Both methods show normal distributions, centered around the true value of $\pi$, which means they converge to $\pi$ as N goes to infinity.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{task2/pi_convergence}
+        \caption{Convergence of the area and integration methods to $\pi$. The x-axis shows the number of samples $N$ and the y-axis shows the resulting $\pi$ estimation. The horizontal line corresponds to the true value of $\pi$}
+        \label{fig:task2-convergence}
+    \end{figure}
+
+    It is clearly visually observable, that the integration method converges faster than the area method. The reason for this is that the observable in the integration method has a smaller variance, as can be seen in \ref{fig:task2-distribution}.
+
+    With a fixed value of $N=10^6$ the estimation is repeated for 1000 times and the results are plotted in a histogram. By the smaller spread (variance) is is clearly visible that the integration method results in a smaller variance. Both methods show normal distributions, centered around the true value of $\pi$, which means they converge to $\pi$ as N goes to infinity.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{task2/pi_distribution}
+        \caption{Distribution of the area and integration methods to $\pi$. The x-axis shows bins collecting the results of the estimations. The y-axis shows the number of occurences inside the respective bin.}
+        \label{fig:task2-distribution}
+    \end{figure}
 
     The resulting mean values are:
 
@@ -82,25 +163,12 @@
         \bar{\pi_{int}} = 3.14154 \pm 0.00091
     \end{align*}
 
-    where the error is the standard deviation of the means (square root of the variance).
+    where the error is the standard deviation of the means. In practice you would not have to repeat the estimations for this, but use equation $\eqref{eq:variance_of_mean}$ instead as shown earlier.
 
     With these results it can be concluded that the integration method is more effective, which means the approximation is on average closer to the real result given the same $N$.
 
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.8\textwidth]{task2/pi_convergence}
-        \caption{Convergence of the area and integration methods to $\pi$.}
-        \label{fig:task2-convergence}
-    \end{figure}
-
-    \begin{figure}[h!]
-        \centering
-        \includegraphics[width=0.8\textwidth]{task2/pi_distribution}
-        \caption{Distribution of the area and integration methods to $\pi$.}
-        \label{fig:task2-distribution}
-    \end{figure}
-
     \section{Task 3}\label{sec:task-3}
+    \subsection{Description and methods}
 
     The goal of this exercise is to approximate following integrals using MC intergration:
 
@@ -113,88 +181,61 @@
 
     \begin{equation}
         \label{eq:Q}
-        I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
-        I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
         Q(\tau) = \exp(-\alpha\tau),
     \end{equation}
 
-    where $\alpha$ is set to 1 for this task.
+    where $\alpha$ is set to 1 for this task and $Q$ is used as an unnormalized probability distribution.
 
-    In Monte Carlo integration we approximate the integral of a function as the expectation value over a certain interval. For the interval [0,1]:
-
-    \begin{equation}
-        \label{eq:int}
-        Q_n(f) = <f>_n = \frac{1}{n}*\sum_{j=1}^{n} f(x_j) \approx \int_{0}^{1} f(x)= I_d(f)
-    \end{equation}
-
-    with
+    In the previous section \ref{sec:task-2} the concept of importance sampling was hinted at. For this integration this technique is used by choosing the probability distribution function:
 
     \begin{equation*}
-        \lim_{n->\infty} Q_n = I_d
+        p(\tau) = \frac{Q(\tau)}{Z} \qquad Z = \int_0^5 Q(\tau) d\tau
     \end{equation*}
 
-    There are multiple ways to calculate the error of the approximation that will be discussed in more detail later. For now we will look at the simplest way. As each random draw $x_k$ is random they are uncorrelated and we can write use the variance of the mean as an error approximation:
+    Now $I_1$ can be solved using \
 
-    \begin{equation}
-        \label{eq:variance_of_mean}
-        \sigma_{\bar{f}}^2 = \frac{\sigma_f^2}{N}
+    \begin{equation}\label{eq:task3_integrals}
+        I_1 = Z \times \frac{\int_0^5 \tau Q(\tau) d\tau}{Z} = Z \times \langle \tau \rangle_{Q(\tau)}
     \end{equation}
 
-    So the error is directly dependent of the variance of our function f. We can reduce this variance by using importance sampling. What this means is splitting f(x) in the following way
+    where $\langle \tau \rangle_{Q(\tau)}$ is the expectation value of $\tau$ where its values are distributed according to $Q(\tau)$ which can be calculated according to \eqref{eq:expect_value}.
+    
+    It is not always trivial to find a procedure to generate random samples $\tau_k$ according to some distribution. Sometimes it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion CITE, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$.
 
-    \begin{equation}
-        \label{eq:importance_splitting}
-        f(x) = g(x) \times p(x)
-    \end{equation}
+    \subsection{Results}
 
-    where p(x) is a probability density, meaning it is normalized in the interval of interest.
-
-    Plugging \eqref{eq:importance_splitting} into \eqref{eq:int} we get the estimation of our integral $Q_n(f)$ as
-
-    \begin{equation}
-        \label{eq:mc_integral}
-        Q_n(f)=Q_n(g)=\sum_{j=1}^N g(x_j)
-    \end{equation}
-
-    where $x_j$ is distributed according to p(x).
-    So by choosing p(x) in a way that reduces the variance the estimation can be improved significantly.
-
-    Sometimes it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$.
     The results obtained by using CDF inversion can be observed in figure \ref{fig:task3-cdf_histogram}.
 
-    \begin{figure}[h]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{task3/cdf_histogram}
-        \caption{Histogram of 100000 random generated values distributed according to p(x), and plot of exact function Q($\tau$) for comparison}
+        \caption{Histogram of $10^5$ random generated values distributed according to $p(\tau)$ using CDF inversion, and plot of exact function p($\tau$) for comparison}
         \label{fig:task3-cdf_histogram}
 
     \end{figure}
 
-    The histogram is normalized by dividing the counts in each bin with the total number of points and the bin width. $Q(\tau)$ is normalized by solving the equation:
+    The histogram is normalized in the following way:
 
     \begin{equation*}
-        \frac{\int_0^5 \exp(-\tau) d\tau = 1}{NORM}
+        \text{height}(bin_i)=\frac{\text{sum}(bin_i)}{N\times w}
     \end{equation*}
 
-    for NORM and using this constant as a normalization factor for Q. The normalization factor therefore is $1-\exp(-5)$.
+    where $w$ is the width of the bin and $N$ the number of samples.
 
-    Now that we have $p(x)$ and $f(x)$ (the function to integrate) we can easily obtain $g(x)$ through \eqref{eq:importance_splitting} and evaluate the integrals of the task,
+    The normalization factor $Z$ is calculated analytically:
 
     \begin{equation*}
-        I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
-        I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
-        Q(\tau) = \exp(-\tau),
+        Z=1-\exp(-t)
     \end{equation*}
 
-    using Monte Carlo integration with $N=10^6$ samples drawn via CDF inversion. The error on each estimate is the standard deviation of the mean, $\sigma_{\bar{f}} = \sigma_f/\sqrt{N}$, computed from the sample variance of the integrand. This yields
+    The final integrals are calculated according to \eqref{eq:task3_integrals} using Monte Carlo integration with $N=10^6$ samples drawn via CDF inversion. The error on each estimate is the standard deviation of the mean, $\sigma_{\bar{f}} = \sigma_f/\sqrt{N}$, computed from the sample variance of the integrand. This yields
 
     \begin{align*}
         I_1 &= 0.9599 \pm 0.0009, \\
         I_2 &= 1.7521 \pm 0.0032.
     \end{align*}
 
-    Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator.
-
+    Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator. One interesting fact to note is the choice of $p$ as being proportional to $Q$. This way the expectation value is only dependent on $\tau$, where we know the variance can at worst be of the same order as $\tau$ in the chosen interval. Had we used a uniform distribution the variance, and therefor the error, could have been far worse as the expecation value would be of the whole function to integrate.
 
     \section{Task 4}\label{sec:task4}
 
@@ -231,7 +272,7 @@
 
     From this we can see that minimizing $\tau_{int}$ is equivalent to maximizing the amount of independent samples for a given $N$ and therefore leads to the lowest possible statistical error in the sample average. Even though this kind of optimization is not necessary for the simple task given, it is nevertheless done for educational purposes in the following way: \\
 
-    Trial values for $\delta$ are chosen from a logarithmic distribution from 0.1 to 100. For each $\delta$ the autocorrelation time is calculated by doing a block analysis. The mean value and variance of the block average for a gradually increasing block size $B$ are calculated with a sample size of $N=1,000,000$. Block sizes where $M<50$ are discarded due to statistical noise. At some block size the variance converges indicating that at this size the blocks are uncorrelated. This value can be inserted into equation \eqref{eq:m_eff} to get $\tau_{int}$. The $\delta$ with the lowest $\tau_{int}$ can be computed this way. This analysis of course quite computationally expensive for real problems and therefore only really makes sense as a starting point if multiple MC simulations for similar problems are computed where the result can be reused. Also the block analysis part for a given $\delta$ is necessary to compute an accurate statistical average.
+    Trial values for $\delta$ are chosen from a logarithmic distribution from 0.1 to 100. For each $\delta$ the autocorrelation time is calculated by doing a block analysis. The mean value and variance of the block average for a gradually increasing block size $B$ are calculated with a sample size of $N=1,000,000$. Block sizes where $M<50$ are discarded due to statistical noise. At some block size the variance converges, indicating that at this size the blocks are uncorrelated. This value can be inserted into equation \eqref{eq:m_eff} to get $\tau_{int}$. The $\delta$ with the lowest $\tau_{int}$ can be computed this way. This analysis of course quite computationally expensive for real problems and therefore only really makes sense as a starting point if multiple MC simulations for similar problems are computed where the result can be reused. However, the block analysis part for a given $\delta$ is necessary to compute an accurate statistical average.
 
     \subsection{Results}
 
@@ -318,7 +359,7 @@
 
     where $D_0$ is the weight of the diagram. It takes a similar form as \eqref{eq:Q}, but in this task $\alpha$ will not be fixed, but also be taken into account in the Metropolis procedure. To achieve this, in each iteration either $\tau$ or $\alpha$ is updated with equal probability. The procedure for updating $\tau$ stays the same as in \ref{sec:task4}, while the proposed $\alpha$ value is drawn uniformly in the set ${0.5,1}$.
 
-    The resulting histograms, split by the $\alpha$ value active at each sample, are given in figure \ref{fig:task5-alpha}.
+    The resulting histograms for $N=10^6$ samples, split by the $\alpha$ value at each sample, are given in figure \ref{fig:task5-alpha}.
 
     \begin{figure}[H]
         \centering
@@ -331,7 +372,7 @@
             \includegraphics[width=\textwidth]{task5/histogram_alpha_0_5}
             \caption{$\alpha=0.5$}
         \end{subfigure}
-        \caption{Resulting histograms of the DMC simulation using the given update scheme for $\alpha$ and $\tau$, split by the $\alpha$ value of each sample and compared to the corresponding normalised $Q(\tau,\alpha)$.}
+        \caption{Resulting histograms of the DMC simulation using the given update scheme for $\alpha$ and $\tau$, split by the $\alpha$ value of each sample and compared to the corresponding normalised $Q(\tau,\alpha)$. On the x-axis the bins for the respective $\tau$ values are indicated, while on the y-axis the normlized tau occurences are shown. The normalization was done analagous to task 3 \ref{sec:task-3}.   }
         \label{fig:task5-alpha}
     \end{figure}
 
@@ -340,13 +381,16 @@
     The results are
 
     \begin{align*}
-        I_1 &= 0.9729 \pm 0.0041, \\
-        I_2 &= 1.7953 \pm 0.0138, \\
-        I_3 &= 2.8600 \pm 0.0102, \\
-        I_4 &= 7.3350 \pm 0.0424.
+        I_1 &= 0.9540 \pm 0.0044 \\
+        I_2 &= 1.724 \pm 0.014 \\
+        I_3 &= 2.8442 \pm 0.0099 \\
+        I_4 &= 7.254 \pm 0.041
     \end{align*}
 
-    $I_3$ and $I_4$ agree with the analytic values $I_3 \approx 2.8508$ and $I_4 \approx 7.2990$ within one standard deviation. $I_1$ and $I_2$ are somewhat further off, at $\approx 3.2$ and $\approx 3.2$ standard deviations from $I_1 \approx 0.9596$ and $I_2 \approx 1.7507$ respectively. This is a larger deviation than seen in section \ref{sec:task4}, but still consistent with a statistical fluctuation of a single run rather than a systematic error.
+    $I_3$ and $I_4$ agree with the analytic values $I_3 \approx 2.8508$ and $I_4 \approx 7.2990$ within one standard deviation. $I_1$ and $I_2$ are somewhat further off, at $\approx 1.2$ and $\approx 1.9$ standard deviations from $I_1 \approx 0.9596$ and $I_2 \approx 1.7507$ respectively. This is a larger deviation than seen in section \ref{sec:task4}, but still consistent with a statistical fluctuation of a single run rather than a systematic error. Something to note here is that the standard deviation itself is bigger. The reason for this is that we have the same number of samples, but with the added degree of freedom $\alpha$ fewer samples actually contribute to their integrals leaving less total samples per integral.
+
+    \section{Task 6}
+
 
 %%% End document %%%
 \end{document}

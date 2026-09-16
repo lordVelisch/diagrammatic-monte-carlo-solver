@@ -9,7 +9,7 @@
 #include <vector>
 #include <numeric>
 
-const double Z_1 = 1 - std::exp(-5); // normalization factor for alpha=1
+const double Z0 = 1 - std::exp(-5); // normalization factor for alpha=1
 const double Z_2 = 2 * (1 - std::exp(-5. / 2)); // normalization factor for alpha=0.5
 
 // better to store struct or something else?
@@ -185,10 +185,10 @@ int main() {
     };
 
     block_analysis_result result1 = block_analysis([](const D &diag) { return diag.tau; }, diags_alpha_1);
-    report_integral("I1 (alpha=1)", result1, Z_1, I1_exact);
+    report_integral("I1 (alpha=1)", result1, Z0, I1_exact);
 
     block_analysis_result result2 = block_analysis([](const D &diag) { return diag.tau * diag.tau; }, diags_alpha_1);
-    report_integral("I2 (alpha=1)", result2, Z_1, I2_exact);
+    report_integral("I2 (alpha=1)", result2, Z0, I2_exact);
 
     block_analysis_result result3 = block_analysis([](const D &diag) { return diag.tau; }, diags_alpha_0_5);
     report_integral("I3 (alpha=0.5)", result3, Z_2, I3_exact);

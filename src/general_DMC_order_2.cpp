@@ -9,8 +9,8 @@
 #include <vector>
 #include <numeric>
 
-const double Z_1 = 1 - std::exp(-5); // normalization factor for alpha=1
-const double Z_2 = 2 * (1 - std::exp(-5. / 2)); // normalization factor for alpha=0.5
+const double Z0 = 1 - std::exp(-5); // normalization factor for 0th order diagram
+const double Z2 = 0.782413501449566; // normalization factor for 2nd order diagram
 
 const double P_add = 0.1;
 const double P_rem = 0.1;
@@ -23,6 +23,11 @@ struct D {
     int order;
     double alpha, beta, tau, tau_1, tau_2, V;
     // should V and alpha be part of the Diagram? it only and external parameter right? seems like it could be external but the task describes the diagram like this
+};
+
+struct sampling_point {
+    int order;
+    double tau;
 };
 
 bool is_valid(D d) {
@@ -80,16 +85,16 @@ void remove_beta(D &d_new, D &d_curr, double &p_acc) {
     // also I will apply the function based on order anyway (but could be not explicit enough)
 }
 
-std::vector<D> sample_diagrams(std::mt19937 &rng, int N = 1'000'000) {
+std::vector<sampling_point> sample_diagrams(std::mt19937 &rng, int N = 1'000'000) {
     std::uniform_real_distribution<> random_uniform(0, 1);
 
-    D d_initial = {.order = 0, .alpha = 1, .tau = random_uniform(rng) * 5};
+    D d_init = {.order = 0, .alpha = 1, .tau = random_uniform(rng) * 5};
     // I should do this actually random or use some warmup
 
-    std::vector D_values = {d_initial};
-    D_values.reserve(N);
+    std::vector<sampling_point> obs_values = {{d_init.order, d_init.tau}};
+    D d_curr = d_init;
+    obs_values.reserve(N);
     for (int i = 1; i < N; i++) {
-        D d_curr = D_values.back();
         D d_new = d_curr;
 
         double rand = random_uniform(rng);
@@ -102,38 +107,55 @@ std::vector<D> sample_diagrams(std::mt19937 &rng, int N = 1'000'000) {
         else
             change_tau(d_new, d_curr, rng, p_acc);
 
-        // this waits for p_acc to be set, right?
         if (random_uniform(rng) < p_acc) {
-            D_values.push_back(d_new);
+            obs_values.push_back({d_new.order, d_new.tau});
+            d_curr = d_new;
         } else {
-            D_values.push_back(d_curr);
+            obs_values.push_back({d_curr.order, d_curr.tau});
         }
     }
-    return D_values;
+    return obs_values;
 }
 
-const double I1_exact = 1. - 6. * std::exp(-5);
-const double I2_exact = 2. - 37. * std::exp(-5);
+//
+// const double I1_exact = 1. - 6. * std::exp(-5);
+// const double I2_exact = 2. - 37. * std::exp(-5);
 
 int main() {
     std::random_device rd;
     std::mt19937 rng(rd());
 
     int N = 10'000'000;
-    std::vector<D> d_values = sample_diagrams(rng, N);
-    std::cout << "count" << d_values.size() << "\n";
+    std::vector<sampling_point> sample_values = sample_diagrams(rng, N);
+    std::cout << "count" << sample_values.size() << "\n";
     std::ofstream histogram_output(std::string(PROJECT_ROOT) + "/data/task6/histogram.csv");
     histogram_output << "tau\n";
 
-    double mean = std::accumulate(d_values.begin(), d_values.end(), 0., [](double sum, D d) { return sum + d.tau; }) /
-                  N;
+    double mean_1 = std::accumulate(sample_values.begin(), sample_values.end(), 0.,
+                                  [](double sum, sampling_point d) { return sum + d.tau; }) / N;
 
-    std::cout << "Mean result is: " << mean << "\n";
+    double mean_2 = std::accumulate(sample_values.begin(), sample_values.end(), 0.,
+                                  [](double sum, sampling_point d) { return sum + d.tau*d.tau; }) / N;
+
+    const size_t order_0_count = std::count_if(sample_values.begin(), sample_values.end(),
+                                               [](sampling_point p) { return p.order == 0; });
+    const size_t order_2_count = sample_values.size() - order_0_count;
+
+    std::cout << "Ratio of expected order 0 diagrams vs actual order 0 diagrams: \n";
+    std::cout << "Expected: " << Z0 / (Z0 + Z2) << "\n";
+    std::cout << "Actual: " << static_cast<double>(order_0_count) / (order_0_count + order_2_count) << "\n";
+
+    std::cout << "Mean result is: " << mean_1 << "\n";
+
+    double I_1 = mean_1*(Z0+Z2);
+    double I_2 = mean_2*(Z0+Z2);
+
+    printf("I1: %f\nI2: %f", I_1, I_2);
 
     //todo: here I need to multiply by the normalization constant
     //todo: to calculate the standard deviation I have to do a block analysis again. I was thinking about generalizing it in a separate file and reusing it since it keep coming up, but need to finalize the datatype first I guess.
 
-    for (const auto diag: d_values) {
+    for (const auto diag: sample_values) {
         histogram_output << diag.tau << "\n";
     }
     return 0;
