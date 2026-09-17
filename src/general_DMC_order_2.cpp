@@ -19,12 +19,11 @@ const double P_rem = 0.1;
 
 const double DELTA = 10;
 
-// I guess it would be good to do a general diagram and specific implementations but for now I will just do 1, but I am not sure inheritance is not a bit overkill here.
 struct D
 {
     int order;
     double alpha, beta, tau, tau_1, tau_2, V;
-    // should V and alpha be part of the Diagram? it only and external parameter right? seems like it could be external but the task describes the diagram like this
+    // todo put external parameters in a metadata struct, this struct could also include data like tau_min and tau_max
 };
 
 struct sampling_point
@@ -35,7 +34,6 @@ struct sampling_point
 
 bool is_valid(D d)
 {
-    // todo dont hardcode the 5
     if (d.order == 0)
         return d.tau >= 0 && d.tau <= 5;
     if (d.order == 2)

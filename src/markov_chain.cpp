@@ -187,6 +187,7 @@ int main() {
 
      std::cout << "Integral I1 result: " << I1 << " pm " << x_sigma <<"\n";
      std::cout << "Difference to exact: " << I1 - I1_exact << "\n";
+     std::cout << "Accpetance ratio: " << result.acceptance_ratio << "\n";
      std::cout << "\n";
 
      // solving integral I2:

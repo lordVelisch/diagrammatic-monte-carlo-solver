@@ -18,6 +18,8 @@ report/*.fdb_latexmk
 report/*.synctex.gz
 report/*.pdf
 
+docs/progress.md
+
 # Data
 data/*/*.csv
 data/

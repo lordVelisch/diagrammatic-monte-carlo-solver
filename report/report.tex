@@ -406,6 +406,8 @@
 
     The difference between the calculated $I_1$ and the correct result is $\approx$ 0.00045 and therefore lies easily in the error bars and $I_2$ is $\approx$ 0.0069 away from the correct result, which is again in the bounds of the expected error. The errors are the standard deviation resulting from the block analysis are therefore statistical in nature which means outliers are to be expected. \\
 
+    The acceptance ratio for $\delta = 10$ is 0.1935.
+
     It is possible to use a $p_{gen}$ that makes the acceptance probability 1, which is by using
 
     \begin{equation*}
@@ -518,7 +520,7 @@
 
     where $\tau_1$, $\tau_2$ and $\beta$ are the internal variables of the current 2nd order diagram, and $p_1$, $p_2$, $p_3$ are the same generation densities that "add-$\beta$" would have used to propose them. If the move is again already of order 0 the move is rejected.
 
-    As $alpha$ is set to 1 for this task, the "change-$\alpha$" move is removed for this simulation.
+    As $alpha$ is set to 1 for this task, the "change-$\alpha$" move is removed for this simulation. The moves still in place are "change-$\tau$" with a probability of 0.8, and "add/remove-$\beta$" with a probability of 0.1 each.
 
     In the previous tasks the normalization needed to calculate the integrals was calculated analytically. We are interested in the normalization constant
 
@@ -565,7 +567,7 @@
 
     The exact result for $I_{1,exact}$ is $3.2043$ which makes the difference quite close to the calculated error at 0.020. Also for $I_2$ the estimation is within 1 standard deviation from the correct result at $I_{2,exact} = 9.28169$ (difference of 0.093). The reference results were calculated numerically up to a precision that is higher than our MC simulation.
 
-    There are many ways to improve this simulation. The internal parameters for $D_2$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for.
+    There are many ways to improve this simulation. The internal parameters for $D_2$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for. Very likely for example would a higher value for "add/remove-$\beta$" increase the accuracy, as there are more configurations in 2nd order diagrams to sample.
 
     Note that the only integral that had to be calculated analytically was $Z_0$. A set of samples was created according to a desired distribution $Q$ without ever having to calculate the full normalization.
 
@@ -573,40 +575,230 @@
 
     \section{Source code}\label{sec:appendix-code}
 
-    This appendix reproduces the source excerpts most relevant to understanding the
-    implementation, for readers going through a printed copy of this report without
-    access to the repository. The full, up-to-date code is available at
+    This appendix reproduces the source excerpts most relevant to understanding the implementation. Only the most important functions of task 4-6 are shown as they are main part of the simulation The full, up-to-date code is available at
     \url{https://github.com/lordVelisch/diagrammatic-monte-carlo-solver}.
 
-    \subsection{How to add a listing (template)}\label{sec:appendix-template}
+    \subsection{Task 4-6}\label{sec:task_4-6}
 
-    Code snippets are typeset with the \texttt{listings} package (configured at the top
-    of \texttt{report.tex} via the \texttt{cppstyle}/\texttt{pythonstyle} styles defined
-    there). Copy the relevant lines from the source file by hand into an environment of
-    the form below -- this keeps the appendix to only the parts worth showing, instead
-    of dumping entire files -- swapping in \texttt{style=pythonstyle} for Python code:
+    Relevant data types:
 
-    \begin{quote}\ttfamily\small
-        \textbackslash begin\{lstlisting\}[style=cppstyle, caption=\{Short description
-        of what this does\}, label=\{lst:my-snippet\}]\\
-        ... code goes here ...\\
-        \textbackslash end\{lstlisting\}
-    \end{quote}
+    \begin{lstlisting}[style=cppstyle, caption={Diagram data structures}, label={lst:diagram_structures}]
+struct D
+{
+    int order;
+    double alpha, beta, tau, tau_1, tau_2, V;
+};
 
-    A listing can then be referenced from anywhere in the text with
-    \texttt{\textbackslash ref\{lst:my-snippet\}} (e.g. Listing~\ref{lst:my-snippet}
-    below).
+struct sampling_point
+{
+    int order;
+    double tau;
+};
+    \end{lstlisting}
 
-    \begin{lstlisting}[style=cppstyle, caption={Example: Metropolis-Hastings acceptance ratio}, label={lst:my-snippet}]
-double acceptance_ratio(double w_new, double w_old) {
-    return std::min(1.0, w_new / w_old); // Metropolis-Hastings
+    The main sampling loop:
+
+    \begin{lstlisting}[style=cppstyle, caption={The function that actually samples diagrams. obs\_values stores the sampling points that are later used for blocking. There is a d\_curr which always stores the current full diagram to save memory. Based on the probabilities provided one of the changes will be executed and it will calculate the acceptance probability internally based on the kind of change and just return the acceptance probability p\_acc, based on which the move is accepted or rejected }, label={lst:sample_diagrams}]
+        std::vector<sampling_point> sample_diagrams(std::mt19937& rng, int N = 1'000'000)
+{
+    std::uniform_real_distribution<> random_uniform(0, 1);
+
+    D d_init = {.order = 0, .alpha = 1, .tau = random_uniform(rng) * 5};
+
+    std::vector<sampling_point> obs_values = {{d_init.order, d_init.tau}};
+    D d_curr = d_init;
+    obs_values.reserve(N);
+    for (int i = 1; i < N; i++)
+    {
+        D d_new = d_curr;
+
+        double rand = random_uniform(rng);
+        double p_acc;
+        if (rand < P_add)
+            add_beta(d_new, d_curr, rng, p_acc);
+        else if (rand > (1 - P_rem))
+            remove_beta(d_new, d_curr, p_acc);
+        else
+            change_tau(d_new, d_curr, rng, p_acc);
+        // Here additional changes like change_alpha, or change_tau_1, etc. could be added in the same way the others are
+
+        if (random_uniform(rng) < p_acc)
+        {
+            obs_values.push_back({d_new.order, d_new.tau});
+            d_curr = d_new;
+        }
+        else
+        {
+            obs_values.push_back({d_curr.order, d_curr.tau});
+        }
+    }
+    return obs_values;
 }
     \end{lstlisting}
 
-    \subsection{Task 5/6: diagram update framework}\label{sec:appendix-task56}
+    The individual changes to the diagrams are done in the following way:
 
-    \emph{Paste the specific functions/snippets worth showing here, following the
-    template above.}
+    \begin{lstlisting}[style=cppstyle, caption={Examples of propsed changes to the diagram. They propose some new move and calculate the Metropolis-Hastings step and write to p\_acc with the result}, label={lst:changes}]
+        void change_tau(D& d_new, D& d_curr, std::mt19937& rng, double& p_acc)
+{
+    std::uniform_real_distribution<double> random_uniform(0, 1);
+
+    d_new.tau = d_curr.tau + DELTA * (random_uniform(rng) - 0.5);
+
+    p_acc = std::min(1., target_pdf(d_new) / target_pdf(d_curr));
+}
+
+void add_beta(D& d_new, D& d_curr, std::mt19937& rng, double& p_acc)
+{
+    std::uniform_real_distribution<> random_uniform(0, 1);
+    std::bernoulli_distribution random_bernoulli(0.5);
+
+    if (d_curr.order == 2)
+    {
+        p_acc = 0;
+        return;
+    }
+
+    if (d_curr.order == 0)
+    {
+        d_new.order = 2;
+        d_new.tau_1 = random_uniform(rng) * 5;
+        d_new.tau_2 = (5 - d_new.tau_1) * random_uniform(rng) + d_new.tau_1;
+        d_new.beta = random_bernoulli(rng) ? 1. / 4 : 3. / 4;
+        d_new.V = 0.5;
+    }
+    p_acc = std::min(1., target_pdf(d_new) / (target_pdf(d_curr) * 1. / (5 - d_new.tau_1) * 1. / 5 * 1. / 2));
+}
+
+void remove_beta(D& d_new, D& d_curr, double& p_acc)
+{
+    d_new.order = 0;
+    p_acc = std::min(1., target_pdf(d_new) * 1. / (5 - d_curr.tau_1) * 1. / 5 * 1. / 2 / target_pdf(d_curr));
+}
+
+    \end{lstlisting}
+
+    \begin{lstlisting}[style=cppstyle, caption={Function that checks if a proposed if the proposed diagram is actually valid. If not the acceptance probability is automatically set to 0}, label={lst:valid}]
+        bool is_valid(D d)
+{
+    if (d.order == 0)
+        return d.tau >= 0 && d.tau <= 5;
+    if (d.order == 2)
+        return d.tau_1 >= 0 && d.tau_2 >= d.tau_1 && d.tau >= d.tau_2 && d.tau <= 5;
+    throw std::runtime_error("Only order 0 and 2 diagrams are implemented so far!");
+}
+    \end{lstlisting}
+
+    \begin{lstlisting}[style=cppstyle, caption={The diagram weights that are being sampled.}, label={lst:target_pdf}]
+double target_pdf(D d)
+{
+    if (!is_valid(d)) return 0;
+    if (d.order == 0)
+        return std::exp(-d.tau * d.alpha);
+    if (d.order == 2)
+    {
+        return std::exp(-d.alpha * d.tau_1) * d.V * std::exp(
+            -d.beta * (d.tau_2 - d.tau_1)) * d.V * std::exp(-d.alpha * (d.tau - d.tau_2));
+    }
+    throw std::runtime_error("Order should only be 0 or 2!");
+}
+    \end{lstlisting}
+
+
+    //todo make this readable
+    \begin{lstlisting}[style=cppstyle, caption={Block analysis as described in \ref{sec:task4}. This calculates the mean and also the variance by gradually increasing block sizes and calculating the variance of the block means.}, label={lst:block-analysis}]
+template <typename Func>
+block_analysis_result block_analysis(Func observable, std::vector<sampling_point>& sample_points)
+{
+    int N = sample_points.size();
+
+    std::vector<double> observables;
+    observables.reserve(N);
+
+    std::vector<int> order_0_points = {0};
+    order_0_points.reserve(N + 1);
+
+    //surely there is a better way
+    for (const auto& point : sample_points)
+    {
+        observables.push_back(observable(point));
+        order_0_points.push_back(order_0_points[order_0_points.size() - 1] + (point.order == 0 ? 1 : 0));
+    }
+
+    std::vector cumulative_sum{0.};
+    cumulative_sum.resize(sample_points.size() + 1);
+
+    std::partial_sum(observables.begin(), observables.end(), cumulative_sum.begin() + 1);
+
+    double mean = cumulative_sum.back() / N;
+
+    std::vector<block_variance_result> block_variance_results;
+    int B = 1;
+
+    bool plateau_found = false;
+    std::vector<block_variance_result> plateau_points;
+
+    while (N / B > 50)
+    {
+        int M = N / B;
+
+        std::vector<double> block_means;
+        block_means.reserve(M);
+
+        for (int b = 0; b < M; b++)
+        {
+            double block_mean = (cumulative_sum[(b + 1) * B] - cumulative_sum[b * B]) / (order_0_points[(b + 1) * B] -
+                order_0_points[b * B]);
+            block_means.push_back(block_mean);
+        }
+
+        double block_mean_avg = std::accumulate(block_means.begin(), block_means.end(), 0.) / M;
+        double block_mean_variance = std::accumulate(block_means.begin(), block_means.end(), 0.,
+                                                     [block_mean_avg](double sum, double value)
+                                                     {
+                                                         double diff = block_mean_avg - value;
+                                                         return sum + diff * diff;
+                                                     }) / M;
+        double mean_variance = block_mean_variance / M;
+        block_variance_results.push_back({.B = B, .mean_variance = mean_variance});
+
+        if (block_variance_results.size() > 1 && std::abs(
+                block_variance_results.back().mean_variance - (block_variance_results.rbegin() + 1)->mean_variance) <
+            delta_variance(block_variance_results.back().mean_variance, M))
+            plateau_found = true;
+
+        if (plateau_found)
+            plateau_points.push_back({.B = B, .mean_variance = mean_variance});
+
+        B *= 2;
+    }
+
+    double plateau_variance = std::accumulate(plateau_points.begin(), plateau_points.end(), 0., [N](double sum, const block_variance_result&block_variance)
+                                              {
+                                                  return sum + 1 / std::pow(
+                                                      delta_variance(
+                                                          block_variance.mean_variance, N / block_variance.B),
+                                                      2) * block_variance.mean_variance;
+                                              }) / std::accumulate(plateau_points.begin(), plateau_points.end(), 0.,
+                                                                   [N](double sum,
+                                                                       const block_variance_result& block_variance)
+                                                                   {
+                                                                       return sum + 1 / std::pow(
+                                                                           delta_variance(
+                                                                               block_variance.mean_variance,
+                                                                               N / block_variance.B), 2);
+                                                                   });
+
+    double autocorrelation_time = 1. / 2 * plateau_variance / block_variance_results.front().mean_variance;
+
+    if (plateau_points.empty())
+        return {.success = false, .autocorrelation_time = -1, .mean = mean, .mean_variance = -1};
+    return {
+        .success = true, .autocorrelation_time = autocorrelation_time, .mean = mean, .mean_variance = plateau_variance
+    };
+}
+
+    \end{lstlisting}
 
     \printbibliography
 
