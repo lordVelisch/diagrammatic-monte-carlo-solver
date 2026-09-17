@@ -19,6 +19,7 @@
 \usepackage{float}
 
 \usepackage{tikz}
+\usepackage{pdflscape}                          % Landscape pages for wide code listings
 
 % Code listings (used in the appendix) -----------------------------------
 \usepackage{listings}
@@ -29,7 +30,7 @@
 \lstdefinestyle{cppstyle}{
     language=C++,
     backgroundcolor=\color{code-bg},
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\scriptsize,
     keywordstyle=\color{code-keyword}\bfseries,
     commentstyle=\color{code-comment}\itshape,
     stringstyle=\color{code-string},
@@ -40,6 +41,8 @@
     rulecolor=\color{black!30},
     breaklines=true,
     breakatwhitespace=false,
+    breakindent=0pt,
+    postbreak=\mbox{\textcolor{code-comment}{$\hookrightarrow$}\space},
     tabsize=4,
     showstringspaces=false,
     captionpos=b,
@@ -49,7 +52,7 @@
 \lstdefinestyle{pythonstyle}{
     language=Python,
     backgroundcolor=\color{code-bg},
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\scriptsize,
     keywordstyle=\color{code-keyword}\bfseries,
     commentstyle=\color{code-comment}\itshape,
     stringstyle=\color{code-string},
@@ -60,6 +63,8 @@
     rulecolor=\color{black!30},
     breaklines=true,
     breakatwhitespace=false,
+    breakindent=0pt,
+    postbreak=\mbox{\textcolor{code-comment}{$\hookrightarrow$}\space},
     tabsize=4,
     showstringspaces=false,
     captionpos=b,
@@ -118,13 +123,13 @@
 
     \newpage
     \section {Introduction}
-    The purpose of these exercises is to provide an introduction to Diagrammatic Monte Carlo Methods. The C++ Programming language was used to implement the simulations and Python with the libraries Pandas and Matplotlib are used for plotting. The source code is available on Github at the following link: \href{https://github.com/lordVelisch/diagrammatic-monte-carlo-solver}{Github} and all calculations are reproducible from this project. Some of the most important parts of the source code are also shown in the appendix.
+    The purpose of these exercises is to provide an introduction to Diagrammatic Monte Carlo Methods. The C++ Programming language was used to implement the simulations and Python with the libraries Pandas and Matplotlib is used for plotting. The source code is available on Github at the following link: \href{https://github.com/lordVelisch/diagrammatic-monte-carlo-solver}{Github} and all calculations are reproducible from this project. Some of the most important parts of the source code are also shown in the appendix.
 
     \section{Task 2: Estimating $\pi$}\label{sec:task_2}                       % Example sections, subsections
 
     \subsection{Task description and methods}
 
-    The goal of this task is to estimate $\pi$ using the area method and 1D Monte Carlo integration. Furthermore the convergence speed of each method is observed by gradually increasing the number of samples $N$ and calculating the resulting approximation at each $N$.
+    The goal of this task is to estimate $\pi$ using the area method and 1D Monte Carlo integration. Furthermore, the convergence speed of each method is observed by gradually increasing the number of samples $N$ and calculating the resulting approximation at each $N$.
 
     The tool we use to calculate $\pi$ is Monte Carlo integration. This method is now elaborated as the following tasks depend on it. Suppose we want to integrate a function $f(x)$ on the interval $\Omega$ where x can have any number of dimensions. We can multiply the integral of $f(x)$ by 1 in the following way:
 
@@ -143,7 +148,7 @@
 
     \begin{equation}
         \label{eq:expect_value}
-        \langle \frac{f(x)}{p(x)} \rangle_{p} = \frac{1}{N} \sum_{i=1}^N \frac{f(x_i)}{p(x_i)} \qquad x_i \propto p(x)
+        \langle \frac{f(x)}{p(x)} \rangle_{p} = \frac{1}{N} \sum_{i=1}^N \frac{f(x_i)}{p(x_i)} \qquad x_i \sim p(x)
     \end{equation}
 
     for large $N$ where $x_i$ are randomly drawn from the distribution $p(x)$.
@@ -176,7 +181,7 @@
     \end{equation*}
 
     By the definition of $f(x)$ the sum corresponds to the number of samples $x_i$ that land inside of the unit circle, which makes the result of this calculation $\frac{\text{\# samples inside the unit circle}}{\text{\# total number of samples}(N)}
-    \}$, which is a more intuitive way to think about this method.
+    $, which is a more intuitive way to think about this method.
 
     \subsubsection{Error}
 
@@ -191,7 +196,7 @@
 
     \subsection{Results}
 
-    Using a uniform distribution from 0 to 1 with a Mersenne Twister number generation the methods described above where implemented and the resulting estimation of $\pi$ is given at a respective sample size $N$. The results of this are shown in figure \ref{fig:task2-convergence}.
+    Using a uniform distribution from 0 to 1 with a Mersenne Twister number generation the methods described above were implemented and the resulting estimation of $\pi$ is given at a respective sample size $N$. The results of this are shown in figure \ref{fig:task2-convergence}.
 
     \begin{figure}[H]
         \centering
@@ -200,22 +205,22 @@
         \label{fig:task2-convergence}
     \end{figure}
 
-    It is clearly visually observable, that the integration method converges faster than the area method. The reason for this is that the observable in the integration method has a smaller variance, as can be seen in figure \ref{fig:task2-distribution}.
+    It is clearly visually observable that the integration method converges faster than the area method. The reason for this is that the observable in the integration method has a smaller variance, as can be seen in figure \ref{fig:task2-distribution}.
 
-    With a fixed value of $N=10^6$ the estimation is repeated for 1000 times and the results are plotted in a histogram. By the smaller spread (variance) is is clearly visible that the integration method results in a smaller variance. Both methods show normal distributions, centered around the true value of $\pi$, which means they converge to $\pi$ as N goes to infinity.
+    With a fixed value of $N=10^6$ the estimation is repeated 1000 times and the results are plotted in a histogram. By the smaller spread (variance) it is clearly visible that the integration method results in a smaller variance. Both methods show normal distributions, centered around the true value of $\pi$, which means they converge to $\pi$ as N goes to infinity.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{task2/pi_distribution}
-        \caption{Distribution of the area and integration methods to $\pi$. The x-axis shows bins collecting the results of the estimations. The y-axis shows the number of occurences inside the respective bin.}
+        \caption{Distribution of the area and integration methods to $\pi$. The x-axis shows bins collecting the results of the estimations. The y-axis shows the number of occurrences inside the respective bin.}
         \label{fig:task2-distribution}
     \end{figure}
 
     The resulting mean values are:
 
     \begin{align*}
-        \bar{\pi_{area}} = 3.1416 \pm 0.0016 \\
-        \bar{\pi_{int}} = 3.14154 \pm 0.00091
+        \bar{\pi}_{area} = 3.1416 \pm 0.0016 \\
+        \bar{\pi}_{int} = 3.14154 \pm 0.00091
     \end{align*}
 
     where the error is the standard deviation of the means. In practice you would not have to repeat the estimations for this, but use equation $\eqref{eq:variance_of_mean}$ instead as shown earlier.
@@ -225,7 +230,7 @@
     \section{Task 3}\label{sec:task-3}
     \subsection{Description and methods}
 
-    The goal of this exercise is to approximate following integrals using MC intergration:
+    The goal of this exercise is to approximate following integrals using MC integration:
 
     \begin{equation}\label{eq:ints_to_calc}
         I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
@@ -247,7 +252,7 @@
         p(\tau) = \frac{Q(\tau)}{Z} \qquad Z = \int_0^5 Q(\tau) d\tau
     \end{equation*}
 
-    Now $I_1$ can be solved using \
+    Now $I_1$ can be solved using
 
     \begin{equation}\label{eq:task3_integrals}
         I_1 = Z \times \frac{\int_0^5 \tau Q(\tau) d\tau}{Z} = Z \times \langle \tau \rangle_{Q(\tau)}
@@ -255,7 +260,7 @@
 
     where $\langle \tau \rangle_{Q(\tau)}$ is the expectation value of $\tau$ where its values are distributed according to $Q(\tau)$. The resulting expectation value can be calculated according to equation \eqref{eq:expect_value}.
 
-    It is not always trivial to find a procedure to generate random samples $\tau_k$ according to some distribution. When the normalization factor $Z$ is analytically known it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$. We can relate a random number from the uniform distribtion from 0 to 1 $\xi$ to a random sample $\tau$ from the desired function $f(x)$ using the following equation:
+    It is not always trivial to find a procedure to generate random samples $\tau_k$ according to some distribution. When the normalization factor $Z$ is analytically known it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$. We can relate a random number from the uniform distribution from 0 to 1 $\xi$ to a random sample $\tau$ from the desired function $f(x)$ using the following equation:
 
     \begin{equation}\label{eq:cdf-inversion}
         \xi = \frac{\int_{\tau_{min}}^{\tau} f(x) dx}{\int_{\tau_{min}}^{\tau_{max}} f(x) dx}
@@ -276,7 +281,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{task3/cdf_histogram}
-        \caption{Normalized Histogram of $10^5$ random generated values distributed according to $p(\tau)$ using CDF inversion, and plot of exact function p($\tau$) for comparison.}
+        \caption{Normalized Histogram of $10^5$ randomly generated values distributed according to $p(\tau)$ using CDF inversion, and plot of exact function p($\tau$) for comparison.}
         \label{fig:task3-cdf_histogram}
 
     \end{figure}
@@ -302,7 +307,7 @@
         I_2 &= 1.7521 \pm 0.0032.
     \end{align*}
 
-    Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator. One interesting fact to note is the choice of $p$ as being proportional to $Q$. This way the expectation value is only dependent on $\tau$ (because $Q$ is now used as part of the probability density), where we know the variance can at worst be of the same order as $\tau$ in the chosen interval. Had we used a uniform distribution the variance and therefore the error could have been far worse as the expecation value would be of the whole function to integrate.
+    Both results agree with the analytic values $I_1 = 1-6e^{-5} \approx 0.9596$ and $I_2 = 2-37e^{-5} \approx 1.7507$ within one to two standard deviations, as expected for an unbiased estimator. One interesting fact to note is the choice of $p$ as being proportional to $Q$. This way the expectation value is only dependent on $\tau$ (because $Q$ is now used as part of the probability density), where we know the variance can at worst be of the same order as $\tau$ in the chosen interval. Had we used a uniform distribution the variance and therefore the error could have been far worse as the expectation value would be of the whole function to integrate.
 
     \section{Task 4}\label{sec:task4}
 
@@ -314,7 +319,7 @@
         f(x)p(x \rightarrow y) = f(y)p(y \rightarrow x) \qquad \text{for all states x,y}
     \end{equation}
 
-    Where $f$ is the target distribution and $p(x \rightarrow y)$ is the probability to transition from state x to y. In most algorithm $p$ is split into a generation probability $p_{gen}$ which gives the probability of generating a proposed new state as a next step in the chain and an acceptance probability $p_{acc}$ which is the probabilty of accepting a generated move. In this instance the Metropolis algorithm was used, in which the acceptance probability of going from a configuration x to y is given as
+    Where $f$ is the target distribution and $p(x \rightarrow y)$ is the probability to transition from state x to y. In most algorithms $p$ is split into a generation probability $p_{gen}$ which gives the probability of generating a proposed new state as a next step in the chain and an acceptance probability $p_{acc}$ which is the probability of accepting a generated move. In this instance the Metropolis algorithm was used, in which the acceptance probability of going from a configuration x to y is given as
 
     \begin{equation}
         \label{eq:metropolis}
@@ -323,9 +328,9 @@
 
     where $f$ is the target distribution. Using this procedure we can directly sample from the normalised distribution $\hat{f}$ without the need for any closed form invertible integral solution, and not even the need to know the normalization constant $Z$ as it is cancelled out in the acceptance probability. \\
 
-    Using the proposed generation probability of just $p_{gen}(x)=U(0,5)$ works and generates the correct distribution. It also has the advantage that subsequent samples are still uncorrelated but for most problems a uniform distribution looks very different than the desired distribution which leads to a small acceptance probability because the random sample will often fall into regions with a low probability density and not pick up the peaks as quickly. This can be improved by generating a proposed displacement inside a box around the current iteration point, instead of uniformly generating a new proposal point in the whole interval. I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out. \\
+    Using the proposed generation probability of just $p_{gen}(x)=U(0,5)$ works and generates the correct distribution. It also has the advantage that subsequent samples are still uncorrelated but for most problems a uniform distribution looks very different than the desired distribution which leads to a small acceptance probability because the random sample will often fall into regions with a low probability density and not pick up the peaks as quickly. This can be improved by generating a proposed displacement inside a box around the current iteration point, instead of uniformly generating a new proposal point in the whole interval. I used the following procedure: Generating a proposed displacement of $\delta \cdot (1-2\xi)$ where $\delta$ is the half-width of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilities cancel out. \\
 
-    $\delta$ is a degree of freedom in this procedure and it effects, how big the proposed steps are in the markov chain, so this procedure does not automatically create an acceptance probability that works better than a uniform distribution. Also the individual samples are now highly correlated, as they directly depend on the previous sample. This means we cannot just use equation \eqref{eq:variance_of_mean} anymore to calculate the error as this will greatly underestimate the error. One way to solve this is to perform a grid search for the optimal $\delta$ using blocking analysis. We separate our $N$ samples into $M$ blocks of $\frac{N}{M}=B$ samples each. If $B$ is larger than the integrated autocorrleation time $\tau_{int}$ of the observable which is sampled, this means that each block is uncorrelated to any other and the trivial formula for the standard deviation of the mean can be recovered in the following way:
+    $\delta$ is a degree of freedom in this procedure and it affects how big the proposed steps are in the Markov chain, so this procedure does not automatically create an acceptance probability that works better than a uniform distribution. Also the individual samples are now highly correlated, as they directly depend on the previous sample. This means we cannot just use equation \eqref{eq:variance_of_mean} anymore to calculate the error as this will greatly underestimate the error. One way to solve this is to perform a grid search for the optimal $\delta$ using blocking analysis. We separate our $N$ samples into $M$ blocks of $\frac{N}{M}=B$ samples each. If $B$ is larger than the integrated autocorrelation time $\tau_{int}$ of the observable which is sampled, this means that each block is uncorrelated to any other and the trivial formula for the standard deviation of the mean can be recovered in the following way:
 
     \begin{equation*}
         \sigma_{\bar{A}}^2 = \frac{\sigma_{A^{(M_i)}}^2}{M}
@@ -342,20 +347,20 @@
 
     From this we can see that minimizing $\tau_{int}$ is equivalent to maximizing the amount of independent samples for a given $N$ and therefore leads to the lowest possible statistical error in the sample average. Even though this kind of optimization is not necessary for the simple task given, it is nevertheless done for educational purposes in the following way: \\
 
-    Trial values for $\delta$ are chosen from a logarithmic distribution from 0.1 to 100. For each $\delta$ the autocorrelation time is calculated by doing a block analysis. The mean value and variance of the block average for a gradually increasing block size $B$ are calculated with a sample size of $N=1,000,000$. Block sizes where $M<50$ are discarded due to statistical noise. At some block size the variance converges, indicating that at this size the blocks are uncorrelated. This value can be inserted into equation \eqref{eq:m_eff} to get $\tau_{int}$. The $\delta$ with the lowest $\tau_{int}$ can be computed this way. This analysis of course quite computationally expensive for real problems and therefore only really makes sense as a starting point if multiple MC simulations for similar problems are computed where the result can be reused. However, the block analysis part for a given $\delta$ is necessary to compute an accurate statistical average and will be used to calculate the statistical errors in the subsequent tasks.
+    Trial values for $\delta$ are chosen from a logarithmic distribution from 0.1 to 100. For each $\delta$ the autocorrelation time is calculated by doing a block analysis. The mean value and variance of the block average for a gradually increasing block size $B$ are calculated with a sample size of $N=1,000,000$. Block sizes where $M<50$ are discarded due to statistical noise. At some block size the variance converges, indicating that at this size the blocks are uncorrelated. This value can be inserted into equation \eqref{eq:m_eff} to get $\tau_{int}$. The $\delta$ with the lowest $\tau_{int}$ can be computed this way. This analysis is of course quite computationally expensive for real problems and therefore only really makes sense as a starting point if multiple MC simulations for similar problems are computed where the result can be reused. However, the block analysis part for a given $\delta$ is necessary to compute an accurate statistical average and will be used to calculate the statistical errors in the subsequent tasks.
 
     \subsection{Results}
 
-    Fig \ref{fig:task4-histogram} shows a histogram of a set of points sampled using this procedure using \eqref{eq:metropolis} with $\delta=10$ and $N=1,000,000$.
+    Figure~\ref{fig:task4-histogram} shows a histogram of a set of points sampled using this procedure using \eqref{eq:metropolis} with $\delta=10$ and $N=1,000,000$.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\textwidth]{task4/histogram.png}
-        \caption{Histogram of points sample using the Metropolis Algorithm according to our target distribution}
+        \caption{Histogram of points sampled using the Metropolis Algorithm according to our target distribution}
         \label{fig:task4-histogram}
     \end{figure}
 
-    The $\delta$ minimization was performed using $N=1,000,000$ samples and using the observable $A(x)=x$ (as we use in I1) and resulted in an optimal value of
+    The $\delta$ minimization was performed using $N=1,000,000$ samples and using the observable $A(x)=x$ (as we use in $I_1$) and resulted in an optimal value of
 
     \begin{equation*}
         \delta_{opt}=10
@@ -370,7 +375,7 @@
         \label{fig:task4-autocorrelation}
     \end{figure}
 
-    Figure \ref{fig:task4-block-analysis} shows the underlying block analysis for a representative subset of the tested $\delta$ values, illustrating how this minimum is found. For each $\delta$ the block variance $\sigma_{A^{(B)}}^2$ is plotted against block size $B$ and compared to the asymptotic ("infinite-block") variance $\text{var\_inf}$, shown as the horizontal line. For very small $\delta=0.1$ the samples are so strongly correlated that the block variance has not yet plateaued even at the largest accessible block size, indicating a very large $\tau_{int}$. As $\delta$ increases the block variance reaches the plateau at ever smaller $B$; $\delta=10$ reaches it earliest, consistent with it being the optimal choice, while for the overly large $\delta=100$ more block-averaging is again needed to converge, mirroring the rise seen on the right-hand side of Fig.~\ref{fig:task4-autocorrelation}.
+    Figure \ref{fig:task4-block-analysis} shows the underlying block analysis for a representative subset of the tested $\delta$ values, illustrating how this minimum is found. For each $\delta$ the block variance $\sigma_{A^{(B)}}^2$ is plotted against block size $B$ and compared to the asymptotic ("infinite-block") variance $\sigma_\infty^2$, shown as the horizontal line. For very small $\delta=0.1$ the samples are so strongly correlated that the block variance has not yet plateaued even at the largest accessible block size, indicating a very large $\tau_{int}$. As $\delta$ increases the block variance reaches the plateau at ever smaller $B$; $\delta=10$ reaches it earliest, consistent with it being the optimal choice, while for the overly large $\delta=100$ more block-averaging is again needed to converge, mirroring the rise seen on the right-hand side of Fig.~\ref{fig:task4-autocorrelation}.
 
     \begin{figure}[H]
         \centering
@@ -404,7 +409,7 @@
         I_2 &= 1.7577 \pm 0.0097.
     \end{align*}
 
-    The difference between the calculated $I_1$ and the correct result is $\approx$ 0.00045 and therefore lies easily in the error bars and $I_2$ is $\approx$ 0.0069 away from the correct result, which is again in the bounds of the expected error. The errors are the standard deviation resulting from the block analysis are therefore statistical in nature which means outliers are to be expected. \\
+    The difference between the calculated $I_1$ and the correct result is $\approx$ 0.00045 and therefore lies easily in the error bars and $I_2$ is $\approx$ 0.0069 away from the correct result, which is again in the bounds of the expected error. The errors are the standard deviations resulting from the block analysis and are therefore statistical in nature which means outliers are to be expected. \\
 
     The acceptance ratio for $\delta = 10$ is 0.1935.
 
@@ -414,7 +419,7 @@
         p_{gen}(x \rightarrow y)= c \times f(y)
     \end{equation*}
 
-    where $c$ is a constant. However, this just means generating the next sample from the correct distribution $f$ which we generally cannot do, except if we can apply CDF inversion. This would again imply that each draw is uncorrelated and we do not need to do any blocking analysis. For the cases, where sampling from the target distribution is not possible it is generally not desirable to have a acceptance probability close to 1, as this would lead to a very high autocorrelation time.
+    where $c$ is a constant. However, this just means generating the next sample from the correct distribution $f$ which we generally cannot do, except if we can apply CDF inversion. This would again imply that each draw is uncorrelated and we do not need to do any blocking analysis. For the cases where sampling from the target distribution is not possible it is generally not desirable to have an acceptance probability close to 1, as this would lead to a very high autocorrelation time.
 
     \section{Task 5}
     \label{sec:task-5}
@@ -435,7 +440,7 @@
         \quad = D_0(\tau, \alpha) = \exp(-\alpha \tau)
     \end{equation}
 
-    where $D_0$ is the weight of the diagram. It takes a similar form as \eqref{eq:Q}, but in this task $\alpha$ will not be fixed, but also be taken into account in the Metropolis procedure. To achieve this, in each iteration either $\tau$ or $\alpha$ is updated with equal probability. The procedure for updating $\tau$ stays the same as in \ref{sec:task4}, while the proposed $\alpha$ value is drawn uniformly from the set $\{0.5,1\}$.
+    where $D_0$ is the weight of the diagram. It takes a similar form as \eqref{eq:Q}, but in this task $\alpha$ will not be fixed, but also be taken into account in the Metropolis procedure. To achieve this, in each iteration either $\tau$ or $\alpha$ is updated with equal probability. The procedure for updating $\tau$ stays the same as in section \ref{sec:task4}, while the proposed $\alpha$ value is drawn uniformly from the set $\{0.5,1\}$.
 
     The resulting histograms for $N=10^6$ samples, split by the $\alpha$ value at each sample, are given in figure \ref{fig:task5-alpha}.
 
@@ -450,7 +455,7 @@
             \includegraphics[width=\textwidth]{task5/histogram_alpha_0_5}
             \caption{$\alpha=0.5$}
         \end{subfigure}
-        \caption{Resulting histograms of the DMC simulation using the given update scheme for $\alpha$ and $\tau$, split by the $\alpha$ value of each sample and compared to the corresponding normalised $Q(\tau,\alpha)$. On the x-axis the bins for the respective $\tau$ values are indicated, while on the y-axis the normlized tau occurences are shown. The normalization was done analagous to task 3 \ref{sec:task-3}.}
+        \caption{Resulting histograms of the DMC simulation using the given update scheme for $\alpha$ and $\tau$, split by the $\alpha$ value of each sample and compared to the corresponding normalised $Q(\tau,\alpha)$. On the x-axis the bins for the respective $\tau$ values are indicated, while on the y-axis the normalized tau occurrences are shown. The normalization was done analogously to task 3 \ref{sec:task-3}.}
         \label{fig:task5-alpha}
     \end{figure}
 
@@ -465,7 +470,7 @@
         I_4 &= 7.254 \pm 0.041
     \end{align*}
 
-    $I_3$ and $I_4$ agree with the analytic values $I_3 \approx 2.8508$ and $I_4 \approx 7.2990$ within one standard deviation. $I_1$ and $I_2$ are somewhat further off, at $\approx 1.2$ and $\approx 1.9$ standard deviations from $I_1 \approx 0.9596$ and $I_2 \approx 1.7507$ respectively. This is a larger deviation than seen in section \ref{sec:task4}, but still consistent with a statistical fluctuation of a single run rather than a systematic error. Something to note here is that the standard deviation itself is bigger. The reason for this is that we have the same number of samples, but with the added degree of freedom $\alpha$ fewer samples actually contribute to their integrals leaving less total samples per integral.
+    $I_3$ and $I_4$ agree with the analytic values $I_3 \approx 2.8508$ and $I_4 \approx 7.2990$ within one standard deviation. $I_1$ and $I_2$ are somewhat further off, at $\approx 1.2$ and $\approx 1.9$ standard deviations from $I_1 \approx 0.9596$ and $I_2 \approx 1.7507$ respectively. This is a larger deviation than seen in section \ref{sec:task4}, but still consistent with a statistical fluctuation of a single run rather than a systematic error. Something to note here is that the standard deviation itself is bigger. The reason for this is that we have the same number of samples, but with the added degree of freedom $\alpha$ fewer samples actually contribute to their integrals leaving fewer total samples per integral.
 
     \section{Task 6}
 
@@ -476,7 +481,7 @@
         Q(\tau, \alpha, V)= e^{-\alpha\tau}+\sum_{\beta}\int_0^{\tau} d\tau_2 \int_0^{\tau_2} d\tau_1 e^{-\alpha\tau_1} V e^{-\beta(\tau_2-\tau_1)}V e^{-\alpha(\tau-\tau_2)}
     \end{equation}
 
-    Which is just the sum of 0th order and 2nd order diagrams with all internal variables integrated out. $D_0(\tau, \alpha)$ just stays the same as in the previous tasks and the 2nd order diagram takes the following form:
+    This is just the sum of 0th order and 2nd order diagrams with all internal variables integrated out. $D_0(\tau, \alpha)$ just stays the same as in the previous tasks and the 2nd order diagram takes the following form:
 
     \begin{equation*}
         \label{eq:2nd_order_D}
@@ -500,7 +505,7 @@
         \quad = D_2(\tau, \alpha, V; \tau_1, \tau_2, \beta) = e^{-\alpha \tau_1} \, V \, e^{-\beta(\tau_2-\tau_1)} \, V \, e^{-\alpha(\tau-\tau_2)}
     \end{equation*}
 
-    The 3 arguments of $D_2$ left to the semicolon are external variables that in our simulation are $\tau \in [0,5], \alpha=1, V=0.5$. The 3 argument to the right of the semicolon are internal variables that are integrated out in the evaluation of $Q$. $\beta$ is a discrete variable that can take values from the set $\{0.25, 0.75\}$, $\tau_1$ and $\tau_2$ are points in time with the following conditions: $0 < \tau_1 < \tau_2 < \tau$. The value of $D_i$ corresponds to its weight.
+    The 3 arguments of $D_2$ to the left of the semicolon are external variables that in our simulation are $\tau \in [0,5], \alpha=1, V=0.5$. The 3 arguments to the right of the semicolon are internal variables that are integrated out in the evaluation of $Q$. $\beta$ is a discrete variable that can take values from the set $\{0.25, 0.75\}$, $\tau_1$ and $\tau_2$ are points in time with the following conditions: $0 < \tau_1 < \tau_2 < \tau$. The value of $D_i$ corresponds to its weight.
 
     Two new updates have to be implemented. An update to go from a $D_0$ to $D_2$ called "add-$\beta$" and the reverse from $D_2$ to $D_0$ called "remove-$\beta$". The generation probabilities of these moves are chosen to be equally likely at $0.1$ each which makes them cancel out in the Metropolis-Hastings step. There are multiple ways you could implement this step to satisfy detailed balance. The Metropolis-Hastings step for "add-$\beta$" has to satisfy the following equation:
 
@@ -512,15 +517,15 @@
 
     When adding a new $D_2$ the internal variables are generated randomly with $\tau_1$, $\tau_2$ from $U(0,5)$ giving this move a probability density of $p(\tau_1) = p(\tau_2)=\frac{1}{5}$ and $\beta$ is chosen with a probability of $0.5$ to be either $\frac{1}{4}$ or $\frac{3}{4}$. If the current diagram in the chain is already 2nd order the move is rejected. If the internal parameters don't satisfy their constraints, the move is also rejected.
 
-    The "remove-$\beta$" step is the inverse of "add-$\beta$" and is chosen in the following way to adhere to detailled balance. Its acceptance probability is the inverse of \eqref{eq:acc_add_beta}:
+    The "remove-$\beta$" step is the inverse of "add-$\beta$" and is chosen in the following way to adhere to detailed balance. Its acceptance probability is the inverse of \eqref{eq:acc_add_beta}:
 
     \begin{equation}\label{eq:acc_remove_beta}
         p_{acc}(D_2 \rightarrow D_0) = \min\left\{ 1, \frac{p_{add}}{p_{rem}} \frac{D_0(\tau, \alpha) \, p_1(\tau_1) p_2(\tau_2) p_3(\beta) \, d\tau_1 d\tau_2}{D_2(\tau, \alpha, V; \tau_1, \tau_2, \beta) \, d\tau_1 d\tau_2} \right\}
     \end{equation}
 
-    where $\tau_1$, $\tau_2$ and $\beta$ are the internal variables of the current 2nd order diagram, and $p_1$, $p_2$, $p_3$ are the same generation densities that "add-$\beta$" would have used to propose them. If the move is again already of order 0 the move is rejected.
+    where $\tau_1$, $\tau_2$ and $\beta$ are the internal variables of the current 2nd order diagram, and $p_1$, $p_2$, $p_3$ are the same generation densities that "add-$\beta$" would have used to propose them. If the diagram is again already of order 0, the move is rejected.
 
-    As $alpha$ is set to 1 for this task, the "change-$\alpha$" move is removed for this simulation. The moves still in place are "change-$\tau$" with a probability of 0.8, and "add/remove-$\beta$" with a probability of 0.1 each.
+    As $\alpha$ is set to 1 for this task, the "change-$\alpha$" move is removed for this simulation. The moves still in place are "change-$\tau$" with a probability of 0.8, and "add/remove-$\beta$" with a probability of 0.1 each.
 
     In the previous tasks the normalization needed to calculate the integrals was calculated analytically. We are interested in the normalization constant
 
@@ -537,7 +542,7 @@
         \langle 1[order=0] \rangle_Q = \frac{\int_0^5 1[order=0] Q(\tau) d\tau}{\int_0^5 Q(\tau) d\tau} = \frac{Z_0}{Z}
     \end{equation*}
 
-    The numerator collapses to exactly $Z_0$ as defined in \ref{eq:Z} as only the constributions from diagrams with order 0 survive the 1[order=0] which results exactly in $Z_0$. A counter is implemented that counts the number of 0th order diagrams. This number in turn can be used to calculate an approximation of $Z$:
+    The numerator collapses to exactly $Z_0$ as defined in \eqref{eq:Z} as only the contributions from diagrams with order 0 survive the 1[order=0] which results exactly in $Z_0$. A counter is implemented that counts the number of 0th order diagrams. This number in turn can be used to calculate an approximation of $Z$:
 
     \begin{equation}\label{eq:Z_final}
         Z \approx \frac{Z_0}{N_0} \times N
@@ -545,7 +550,7 @@
 
     where $N_0$ is the number of samples that are order 0 diagrams. For this we still have to calculate $Z_0$ analytically, but with this knowledge alone we could add any order diagrams and still calculate $Z$ using the same procedure. One thing to note is that $N_0$ can't be too small, otherwise statistical errors will lead to a bad estimation, which is not a problem for this simulation though. This statistical error in $Z$ does however change how the overall error of the integration can be calculated.
 
-    Currently the error is derived from the variance of the block means in the blocking analysis, where the variance has converged with increasing block size meaning that the blocks are uncorrelated. This gives us the statistical error $\delta(\langle f(\tau) \rangle)_Q$, which in our integrals of interest are still multiplied by the normalization factor $Z$ \eqref{eq:task3_integrals}. But $Z$ itself has a statistical error now which is correlated with the error for the expectation value. This is solved here by including the normalization factor $Z$ into the calculation of the block means inside the blocking analysis itself. So I calculate the estimation for $Z$ in each block and calculate the variance of the full integral evaluated at each block in the same way I would do with the resulting sample mean of observable of interest.
+    Currently the error is derived from the variance of the block means in the blocking analysis, where the variance has converged with increasing block size meaning that the blocks are uncorrelated. This gives us the statistical error $\delta(\langle f(\tau) \rangle)_Q$, which in our integrals of interest is still multiplied by the normalization factor $Z$ \eqref{eq:task3_integrals}. But $Z$ itself has a statistical error now which is correlated with the error for the expectation value. This is solved here by including the normalization factor $Z$ into the calculation of the block means inside the blocking analysis itself. So I calculate the estimation for $Z$ in each block and calculate the variance of the full integral evaluated at each block in the same way I would do with the resulting sample mean of the observable of interest.
 
     \subsection{Results}
 
@@ -567,7 +572,7 @@
 
     The exact result for $I_{1,exact}$ is $3.2043$ which makes the difference quite close to the calculated error at 0.020. Also for $I_2$ the estimation is within 1 standard deviation from the correct result at $I_{2,exact} = 9.28169$ (difference of 0.093). The reference results were calculated numerically up to a precision that is higher than our MC simulation.
 
-    There are many ways to improve this simulation. The internal parameters for $D_2$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for. Very likely for example would a higher value for "add/remove-$\beta$" increase the accuracy, as there are more configurations in 2nd order diagrams to sample.
+    There are many ways to improve this simulation. The internal parameters for $D_2$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for. For example, a higher value for "add/remove-$\beta$" would very likely increase the accuracy, as there are more configurations in 2nd order diagrams to sample.
 
     Note that the only integral that had to be calculated analytically was $Z_0$. A set of samples was created according to a desired distribution $Q$ without ever having to calculate the full normalization.
 
@@ -575,9 +580,10 @@
 
     \section{Source code}\label{sec:appendix-code}
 
-    This appendix reproduces the source excerpts most relevant to understanding the implementation. Only the most important functions of task 4-6 are shown as they are main part of the simulation The full, up-to-date code is available at
+    This appendix reproduces the source excerpts most relevant to understanding the implementation. Only the most important functions of task 4-6 are shown as they are the main part of the simulation. The full, up-to-date code is available at
     \url{https://github.com/lordVelisch/diagrammatic-monte-carlo-solver}.
 
+    \begin{landscape}
     \subsection{Task 4-6}\label{sec:task_4-6}
 
     Relevant data types:
@@ -638,7 +644,7 @@ struct sampling_point
 
     The individual changes to the diagrams are done in the following way:
 
-    \begin{lstlisting}[style=cppstyle, caption={Examples of propsed changes to the diagram. They propose some new move and calculate the Metropolis-Hastings step and write to p\_acc with the result}, label={lst:changes}]
+    \begin{lstlisting}[style=cppstyle, caption={Examples of proposed changes to the diagram. They propose some new move and calculate the Metropolis-Hastings step and write to p\_acc with the result}, label={lst:changes}]
         void change_tau(D& d_new, D& d_curr, std::mt19937& rng, double& p_acc)
 {
     std::uniform_real_distribution<double> random_uniform(0, 1);
@@ -678,7 +684,7 @@ void remove_beta(D& d_new, D& d_curr, double& p_acc)
 
     \end{lstlisting}
 
-    \begin{lstlisting}[style=cppstyle, caption={Function that checks if a proposed if the proposed diagram is actually valid. If not the acceptance probability is automatically set to 0}, label={lst:valid}]
+    \begin{lstlisting}[style=cppstyle, caption={Function that checks if the proposed diagram is actually valid. If not the acceptance probability is automatically set to 0}, label={lst:valid}]
         bool is_valid(D d)
 {
     if (d.order == 0)
@@ -799,6 +805,7 @@ block_analysis_result block_analysis(Func observable, std::vector<sampling_point
 }
 
     \end{lstlisting}
+    \end{landscape}
 
     \printbibliography
 
