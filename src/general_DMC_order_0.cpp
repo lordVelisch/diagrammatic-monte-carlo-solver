@@ -9,22 +9,14 @@
 #include <vector>
 #include <numeric>
 
+#include "blocking_analysis.h"
+
 const double Z0_analytical = 1 - std::exp(-5); // normalization factor for alpha=1
 const double Z2_analytical = 2 * (1 - std::exp(-5. / 2)); // normalization factor for alpha=0.5
 
 // better to store struct or something else?
 struct D {
     double alpha, tau;
-};
-
-struct block_analysis_result {
-    bool success;
-    double autocorrelation_time, mean, mean_variance;
-};
-
-struct block_variance_result {
-    int B;
-    double mean_variance;
 };
 
 double target_pdf(D d) {
@@ -68,10 +60,6 @@ std::vector<D> sample_diagrams(std::mt19937 &rng, const double delta, int N = 1'
         }
     }
     return D_values;
-}
-
-double delta_variance(double blocked_variance, int M) {
-    return blocked_variance * std::sqrt(2. / (M - 1));
 }
 
 template<typename Func>
