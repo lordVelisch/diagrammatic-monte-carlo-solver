@@ -20,4 +20,5 @@ report/*.pdf
 
 # Data
 data/*/*.csv
+data/
 report/figures/
