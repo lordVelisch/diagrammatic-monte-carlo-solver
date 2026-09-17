@@ -63,6 +63,8 @@
     \tableofcontents
 
     \newpage
+    \section {Introduction}
+    The purpose of these exercises is to provide an introduction to Diagrammatic Monte Carlo Methods. The C++ Programming language was used to implement the simulations and Python with the libraries Pandas and Matplotlib are used for plotting. The source code is available on Github at the following link:
     \section{Task 2: Estimating $\pi$}                              % Example sections, subsections
 
     \subsection{Task description and methods}
@@ -170,10 +172,10 @@
 
     The goal of this exercise is to approximate following integrals using MC intergration:
 
-    \begin{equation*}
+    \begin{equation}\label{eq:ints_to_calc}
         I_1 = \int_0^5 \tau \, Q(\tau) \, d\tau, \qquad
         I_2 = \int_0^5 \tau^2 \, Q(\tau) \, d\tau, \qquad
-    \end{equation*}
+    \end{equation}
 
     with
 
@@ -255,10 +257,10 @@
     $\delta$ is a degree of freedom in this procedure and it effects, how big the proposed steps are in the markov chain, so this procedure does not automatically create an acceptance probability that works better than a uniform distribution. Also the individual samples are now highly correlated, as they directly depend on the previous sample. This means we cannot just use equation \eqref{eq:variance_of_mean} anymore to calculate the error as this will greatly underestimate the error. One way to solve this is to perform blocking analysis. We separate our $N$ samples into $M$ blocks of $\frac{N}{M}=B$ samples each. If $B$ is larger than the integrated autocorrleation time $\tau_{int}$ of the observable which is sampled, this means that each block is uncorrelated to any other and the trivial formula for the standard deviation of the mean can be recovered in the following way:
 
     \begin{equation*}
-        \sigma_{\bar{A}}^2 = \frac{\sigma_{A^{(B)}}^2}{M}
+        \sigma_{\bar{A}}^2 = \frac{\sigma_{A^{(M_i)}}^2}{M}
     \end{equation*}
 
-    where $A^{(B)}$ is the mean value of observable $A(x)$ in block $B$. \\
+    where $A^{(M_i)}$ is the mean value of observable $A(x)$ in block $M_i$. \\
 
     If $\tau_{int}$ is know we can also define an effective number of independent samples $M_{eff}$ and calculate the variance of the mean using $\sigma{\bar{A}}^2 = \frac{\sigma{A}}{M_{eff}}$ where
 
@@ -451,13 +453,35 @@
         Z \approx \frac{Z_0}{N_0}
     \end{equation}
 
-    where $N_0$ is the number of samples that are order 0 diagrams. For this we still have to calculate $Z_0$ analytically, but with this knowledge alone we could add any order diagrams and still calculate $Z$ in the same way. One thing to note is that $N_0$ can't be too small, otherwise statistical errors will lead to a bad estimation, which is not a problem for this simulation though. The error that is made still has to be calculated and added on top of the statistial error of the mean values (or does it?)
+    where $N_0$ is the number of samples that are order 0 diagrams. For this we still have to calculate $Z_0$ analytically, but with this knowledge alone we could add any order diagrams and stildl calculate $Z$ in the same way. One thing to note is that $N_0$ can't be too small, otherwise statistical errors will lead to a bad estimation, which is not a problem for this simulation though. This statistical error does however change how the error can be calculated.
+
+    Currently the error is derived from the variance of the block means in the blocking analysis, where the variance has converged with increasing block size meaning that the blocks are uncorrelated. This gives us the statistical error $\delta(\langle f(\tau) \rangle)_Q$, which in our integrals of interest are still multiplies by the normalization factor $Z$ \eqref{eq:task3_integrals}. But $Z$ itself has a statistical error now which is correlated with the error for the expectation value. This is solved here by including the normalization factor $Z$ into the calculation of the block means inside the blocking analysis itself. This way I calculate the block means as
+
+    \begin{equation*}
+        Z \times \bar{A^{(M_i)}} = \frac{Z_0}{M} \bar{A^{(M_i)}}
+    \end{equation*}
 
     \subsection{Results}
 
-    There are many ways to improve this simulation. The internal parameters for $D_0$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result.
+    The simulation was run for $N=10^7$ samples with $\delta=10$ and $p_{add} = p_{rem} = 0.1$. The resulting histogram binned by $\tau$ is shown in figure \ref{fig:task6-distribution}
 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{task6/histogram}
+        \caption{Normalized Histogram of points sampled and binned to $\tau$ values. The x-axis shows bins for the respective $\tau$ values. The y-axis shows the normalized occurrence count. The target probability distribution is also drawn for comparison.}
+        \label{fig:task6-distribution}
+    \end{figure}
 
+    The results of the integrals $I_1$ and $I_2$, as they are defined in \eqref{eq:ints_to_calc} with the new definition of $Q$ \eqref{eq:Q_order_2} which includes 2nd order diagrams are:
+
+    \begin{align*}
+        I_1 &= 3.225 \pm 0.038 \\
+        I_2 &= 9.37 \pm 0.16 \\
+    \end{align*}
+
+    The exact result for $I_{1,exact}$ is $3.2043$ which makes the difference quite close to the calculated error at 0.020. Also for $I_2$ the estimation is within 1 standard deviation from the correct result at $I_{2,exact} = 9.28169$ (difference of 0.093). The reference results were calculated numerically up to a precision that is higher than our MC simulation.
+
+    There are many ways to improve this simulation. The internal parameters for $D_0$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for.
 
 %%% End document %%%
 \end{document}

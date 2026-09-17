@@ -7,7 +7,7 @@ __pycache__/
 *.pyc
 .idea/
 out/
-
+CLAUDE.md
 # LaTeX build artifacts
 report/*.aux
 report/*.log
