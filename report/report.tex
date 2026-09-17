@@ -136,7 +136,7 @@
     where $p(x)$ is a probability density, meaning
 
     \begin{equation*}
-        \int_{\Omega} p(x)= 1 dx
+        \int_{\Omega} p(x) dx = 1
     \end{equation*}
 
     By the law of large numbers we can write \eqref{eq:int_base} as the expectation value of $\frac{f(x)}{p(x)}$:
@@ -148,7 +148,7 @@
 
     for large $N$ where $x_i$ are randomly drawn from the distribution $p(x)$.
 
-    If $p(x)$ is a uniform distribution it is a constant $\omega$ where $\omega$ is the interval length and can be pulled on the left side resulting in the equation
+    If $p(x)$ is a uniform distribution it is a constant $\frac{1}{\omega}$ where $\omega$ is the interval length and can be pulled to the left side resulting in the equation
 
     \begin{equation}
         \label{eq:int_concrete}
@@ -255,7 +255,19 @@
 
     where $\langle \tau \rangle_{Q(\tau)}$ is the expectation value of $\tau$ where its values are distributed according to $Q(\tau)$. The resulting expectation value can be calculated according to equation \eqref{eq:expect_value}.
 
-    It is not always trivial to find a procedure to generate random samples $\tau_k$ according to some distribution. Sometimes it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion \cite{Task_description}, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$.
+    It is not always trivial to find a procedure to generate random samples $\tau_k$ according to some distribution. When the normalization factor $Z$ is analytically known it is possible to obtain a set of values $x_k$, distributed according to a p(x) by using CDF inversion, which is demonstrated on the following example: We are trying to generate random $\tau$ distributed according to $\exp(-\tau)$. We can relate a random number from the uniform distribtion from 0 to 1 $\xi$ to a random sample $\tau$ from the desired function $f(x)$ using the following equation:
+
+    \begin{equation}\label{eq:cdf-inversion}
+        \xi = \frac{\int_{\tau_{min}}^{\tau} f(x) dx}{\int_{\tau_{min}}^{\tau_{max}} f(x) dx}
+    \end{equation}
+
+    In our case $\tau_{min}=0$ and $\tau_{max}=5$. When solving equation \eqref{eq:cdf-inversion} for $\tau$ the result is:
+
+    \begin{equation}\label{eq:tau_generation}
+        \tau(\xi) = -\ln(-r Z + 1))
+    \end{equation}
+
+    which gives us an equation to draw random $\tau$ values from the distribution $Q(\tau)$.
 
     \subsection{Results}
 
@@ -296,7 +308,7 @@
 
     \subsection{Description and methods}
 
-    The goal of this task is to replicate the sampling of $Q(\tau, \alpha)$ using a Markov Chain Monte Carlo method. It is not always possible to solve the integrals needed for CDF inversion analytically which creates the necessity for another method to create samples distributed according to some function $Q$. In these cases we need a Markov Chain procedure (MCMC). In MCMC we generate a chain where each new sample is generated stochastically and then accepted or rejected based on a given procedure. The condition that always has to hold for an update rule of the chain is detailed balance\cite{advanced_comp_physics_script}:
+    The goal of this task is to replicate the sampling of $Q(\tau, \alpha)$ using a Markov Chain Monte Carlo method. It is not always possible to solve the integrals needed for CDF inversion \eqref{eq:cdf-inversion} analytically which creates the necessity for another method to create samples distributed according to some function $Q$. In these cases we need a Markov Chain procedure (MCMC). In MCMC we generate a chain where each new sample is generated stochastically and then accepted or rejected based on a given procedure. The condition that always has to hold for an update rule of the chain is detailed balance\cite{advanced_comp_physics_script}:
     
     \begin{equation}\label{eq:detailled_balance}
         f(x)p(x \rightarrow y) = f(y)p(y \rightarrow x) \qquad \text{for all states x,y}
@@ -311,7 +323,7 @@
 
     where $f$ is the target distribution. Using this procedure we can directly sample from the normalised distribution $\hat{f}$ without the need for any closed form invertible integral solution, and not even the need to know the normalization constant $Z$ as it is cancelled out in the acceptance probability. \\
 
-    Using the proposed generation probability of just $p_{gen}(x)=U(0,5)$ works and generates the correct distribution but has a tiny acceptance probability as the target distribution is exponential and therefore has most points in a small region, which makes it not uniform at all. This can be improved by generating a proposed displacement inside a box around the current iteration point, instead of uniformly generating a new proposal point in the whole interval. I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out. \\
+    Using the proposed generation probability of just $p_{gen}(x)=U(0,5)$ works and generates the correct distribution. It also has the advantage that subsequent samples are still uncorrelated but for most problems a uniform distribution looks very different than the desired distribution which leads to a small acceptance probability because the random sample will often fall into regions with a low probability density and not pick up the peaks as quickly. This can be improved by generating a proposed displacement inside a box around the current iteration point, instead of uniformly generating a new proposal point in the whole interval. I used the following procedure: Generating a proposed displacement of $ \delta * (1-2\xi)$ where $\delta$ is the length of the interval that the current $\tau$ could possibly be displaced to and $\xi$ is a random number in the interval $[0,1]$. If $\tau_{proposed}$ lies outside of the integration interval the move is automatically rejected. This procedure is symmetric, meaning the generation probabilites cancel out. \\
 
     $\delta$ is a degree of freedom in this procedure and it effects, how big the proposed steps are in the markov chain, so this procedure does not automatically create an acceptance probability that works better than a uniform distribution. Also the individual samples are now highly correlated, as they directly depend on the previous sample. This means we cannot just use equation \eqref{eq:variance_of_mean} anymore to calculate the error as this will greatly underestimate the error. One way to solve this is to perform a grid search for the optimal $\delta$ using blocking analysis. We separate our $N$ samples into $M$ blocks of $\frac{N}{M}=B$ samples each. If $B$ is larger than the integrated autocorrleation time $\tau_{int}$ of the observable which is sampled, this means that each block is uncorrelated to any other and the trivial formula for the standard deviation of the mean can be recovered in the following way:
 
@@ -442,7 +454,7 @@
 
     The correctness of the code can be verified by again calculating the integral results from the samples with the corresponding $\alpha$ values, using the same block analysis as in section \ref{sec:task4} to obtain the error bars. Of course this will also give two new integration results corresponding to the integral associated with $Q(\alpha=0.5, \tau)$, which we call $I_3$ and $I_4$ in analogy to $I_1$ and $I_2$.
 
-    We can reuse the formula we used before \eqref{eq:task3_integrals}, except that we need to calculate the normalization factor for $I_2$ which is calculated analytically to be $Z_2 = 2 (1 - \exp(\frac{-5}{2}))$. The results for the full integrals are
+    We can reuse the formula we used before \eqref{eq:task3_integrals}, except that we need to calculate the normalization factor for $I_3$ and $I_4$ where $\alpha=0.5$ which is calculated analytically to be $Z_{0.5} = 2 (1 - \exp(\frac{-5}{2}))$. The results for the full integrals are
 
     \begin{align*}
         I_1 &= 0.9540 \pm 0.0044 \\
@@ -494,19 +506,19 @@
         p_{acc}(D_0 \rightarrow D_2) = \min\left\{ 1, \frac{p_{rem}}{p_{add}} \frac{D_2(\tau, \alpha, V; \tau_1, \tau_2, \beta) \, d\tau_1 d\tau_2}{D_0(\tau, \alpha) \, p_1(\tau_1) p_2(\tau_2) p_3(\beta) \, d\tau_1 d\tau_2} \right\}
     \end{equation}
 
-    where $p_{add}$ and $p_{rem}$ are the context factors, i.e. the probabilities with which the "add-$\beta$" and "remove-$\beta$" updates are addressed. Since they are equal here, their ratio is $1$, and the differentials $d\tau_1 d\tau_2$ cancel as well.
+    where $p_{add}$ and $p_{rem}$ are the context factors, which are the probabilities with which the "add-$\beta$" and "remove-$\beta$" updates are addressed. Since they are equal here, their ratio is $1$, and the differentials $d\tau_1 d\tau_2$ cancel as well.
 
     When adding a new $D_2$ the internal variables are generated randomly with $\tau_1$, $\tau_2$ from $U(0,5)$ giving this move a probability density of $p(\tau_1) = p(\tau_2)=\frac{1}{5}$ and $\beta$ is chosen with a probability of $0.5$ to be either $\frac{1}{4}$ or $\frac{3}{4}$. If the current diagram in the chain is already 2nd order the move is rejected. If the internal parameters don't satisfy their constraints, the move is also rejected.
 
-    The "remove-$\beta$" step is the inverse of "add-$\beta$" and is chosen in the following way to adhere to detailled balance. No new internal variables have to be proposed, since the proposed diagram $D_0(\tau, \alpha)$ is fully determined by the current one. Its acceptance probability is therefore the inverse of \eqref{eq:acc_add_beta}:
+    The "remove-$\beta$" step is the inverse of "add-$\beta$" and is chosen in the following way to adhere to detailled balance. Its acceptance probability is the inverse of \eqref{eq:acc_add_beta}:
 
     \begin{equation}\label{eq:acc_remove_beta}
         p_{acc}(D_2 \rightarrow D_0) = \min\left\{ 1, \frac{p_{add}}{p_{rem}} \frac{D_0(\tau, \alpha) \, p_1(\tau_1) p_2(\tau_2) p_3(\beta) \, d\tau_1 d\tau_2}{D_2(\tau, \alpha, V; \tau_1, \tau_2, \beta) \, d\tau_1 d\tau_2} \right\}
     \end{equation}
 
-    where $\tau_1$, $\tau_2$ and $\beta$ are the internal variables of the current 2nd order diagram, and $p_1$, $p_2$, $p_3$ are the same generation densities that "add-$\beta$" would have used to propose them.
+    where $\tau_1$, $\tau_2$ and $\beta$ are the internal variables of the current 2nd order diagram, and $p_1$, $p_2$, $p_3$ are the same generation densities that "add-$\beta$" would have used to propose them. If the move is again already of order 0 the move is rejected.
 
-    If the move is again already of order 0 the move is rejected.
+    As $alpha$ is set to 1 for this task, the "change-$\alpha$" move is removed for this simulation.
 
     In the previous tasks the normalization needed to calculate the integrals was calculated analytically. We are interested in the normalization constant
 
@@ -526,16 +538,12 @@
     The numerator collapses to exactly $Z_0$ as defined in \ref{eq:Z} as only the constributions from diagrams with order 0 survive the 1[order=0] which results exactly in $Z_0$. A counter is implemented that counts the number of 0th order diagrams. This number in turn can be used to calculate an approximation of $Z$:
 
     \begin{equation}\label{eq:Z_final}
-        Z \approx \frac{Z_0}{N_0}
+        Z \approx \frac{Z_0}{N_0} \times N
     \end{equation}
 
     where $N_0$ is the number of samples that are order 0 diagrams. For this we still have to calculate $Z_0$ analytically, but with this knowledge alone we could add any order diagrams and still calculate $Z$ using the same procedure. One thing to note is that $N_0$ can't be too small, otherwise statistical errors will lead to a bad estimation, which is not a problem for this simulation though. This statistical error in $Z$ does however change how the overall error of the integration can be calculated.
 
-    Currently the error is derived from the variance of the block means in the blocking analysis, where the variance has converged with increasing block size meaning that the blocks are uncorrelated. This gives us the statistical error $\delta(\langle f(\tau) \rangle)_Q$, which in our integrals of interest are still multiplied by the normalization factor $Z$ \eqref{eq:task3_integrals}. But $Z$ itself has a statistical error now which is correlated with the error for the expectation value. This is solved here by including the normalization factor $Z$ into the calculation of the block means inside the blocking analysis itself. This way I calculate the block means as
-
-    \begin{equation*}
-        Z \times \bar{A^{(M_i)}} = \frac{Z_0}{M} \bar{A^{(M_i)}}
-    \end{equation*}
+    Currently the error is derived from the variance of the block means in the blocking analysis, where the variance has converged with increasing block size meaning that the blocks are uncorrelated. This gives us the statistical error $\delta(\langle f(\tau) \rangle)_Q$, which in our integrals of interest are still multiplied by the normalization factor $Z$ \eqref{eq:task3_integrals}. But $Z$ itself has a statistical error now which is correlated with the error for the expectation value. This is solved here by including the normalization factor $Z$ into the calculation of the block means inside the blocking analysis itself. So I calculate the estimation for $Z$ in each block and calculate the variance of the full integral evaluated at each block in the same way I would do with the resulting sample mean of observable of interest.
 
     \subsection{Results}
 
@@ -557,7 +565,9 @@
 
     The exact result for $I_{1,exact}$ is $3.2043$ which makes the difference quite close to the calculated error at 0.020. Also for $I_2$ the estimation is within 1 standard deviation from the correct result at $I_{2,exact} = 9.28169$ (difference of 0.093). The reference results were calculated numerically up to a precision that is higher than our MC simulation.
 
-    There are many ways to improve this simulation. The internal parameters for $D_0$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for.
+    There are many ways to improve this simulation. The internal parameters for $D_2$ could always be generated in a valid way, which would make the acceptance probability calculation just slightly more complicated but lead to more "add-$\beta$" steps being accepted. Also there could be a probability added to change the internal variables of $D_2$ which would likely sample a greater range of 2nd order diagrams more quickly leading to a smaller autocorrelation time and therefore a more accurate result. The probabilities of executing "add"- or "remove-$\beta$" can also all be tuned in order to achieve the smallest possible autocorrelation time if this is something one tries to optimize for.
+
+    Note that the only integral that had to be calculated analytically was $Z_0$. A set of samples was created according to a desired distribution $Q$ without ever having to calculate the full normalization.
 
     \appendix
 
